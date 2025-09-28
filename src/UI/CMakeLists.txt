@@ -1,0 +1,3 @@
+add_subdirectory(AppSettings)
+add_subdirectory(FirstRunPromptDialogs)
+add_subdirectory(toolbar)

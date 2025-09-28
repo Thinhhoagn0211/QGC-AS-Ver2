@@ -1,0 +1,84 @@
+add_library(MissionManager
+	BlankPlanCreator.cc
+	BlankPlanCreator.h
+	CameraCalc.cc
+	CameraCalc.h
+	CameraSection.cc
+	CameraSection.h
+	CameraSpec.cc
+	CameraSpec.h
+	ComplexMissionItem.cc
+	ComplexMissionItem.h
+	CorridorScanComplexItem.cc
+	CorridorScanComplexItem.h
+	CorridorScanPlanCreator.cc
+	CorridorScanPlanCreator.h
+	FixedWingLandingComplexItem.cc
+	FixedWingLandingComplexItem.h
+	GeoFenceController.cc
+	GeoFenceController.h
+	GeoFenceManager.cc
+	GeoFenceManager.h
+	KMLPlanDomDocument.cc
+	KMLPlanDomDocument.h
+	LandingComplexItem.cc
+	LandingComplexItem.h
+	MissionCommandList.cc
+	MissionCommandList.h
+	MissionCommandTree.cc
+	MissionCommandTree.h
+	MissionCommandUIInfo.cc
+	MissionCommandUIInfo.h
+	MissionController.cc
+	MissionController.h
+	MissionItem.cc
+	MissionItem.h
+	MissionManager.cc
+	MissionManager.h
+	MissionSettingsItem.cc
+	MissionSettingsItem.h
+	PlanCreator.cc
+	PlanCreator.h
+	PlanElementController.cc
+	PlanElementController.h
+	PlanManager.cc
+	PlanManager.h
+	PlanMasterController.cc
+	PlanMasterController.h
+	RallyPoint.cc
+	RallyPointController.cc
+	RallyPointController.h
+	RallyPoint.h
+	RallyPointManager.cc
+	RallyPointManager.h
+	Section.h
+	SimpleMissionItem.cc
+	SimpleMissionItem.h
+	SpeedSection.cc
+	SpeedSection.h
+	StructureScanComplexItem.cc
+	StructureScanComplexItem.h
+	StructureScanPlanCreator.cc
+	StructureScanPlanCreator.h
+	SurveyComplexItem.cc
+	SurveyComplexItem.h
+	SurveyPlanCreator.cc
+	SurveyPlanCreator.h
+	TakeoffMissionItem.cc
+	TakeoffMissionItem.h
+	TransectStyleComplexItem.cc
+	TransectStyleComplexItem.h
+	VisualMissionItem.cc
+	VisualMissionItem.h
+	VTOLLandingComplexItem.cc
+	VTOLLandingComplexItem.h
+
+	Section.h # shouldn't be listed here, but isn't named properly for AUTOMOC
+
+	${EXTRA_SRC}
+)
+
+
+target_link_libraries(MissionManager PUBLIC Qt5::Xml MAVLink QmlControls)
+
+target_include_directories(MissionManager INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
