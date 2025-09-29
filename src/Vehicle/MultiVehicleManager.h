@@ -15,7 +15,7 @@
 
 #include <QtCore/QObject>
 #include <QtCore/QLoggingCategory>
-
+#include "Vehicle.h"
 
 class LinkInterface;
 class Vehicle;

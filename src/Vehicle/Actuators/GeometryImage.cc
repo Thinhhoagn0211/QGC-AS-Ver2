@@ -10,9 +10,10 @@
 #include "GeometryImage.h"
 
 #include <QtCore/QDir>
-
+#include <QVector2D>
+#include <QVector3D>
 #include <array>
-
+#include <cmath>
 using namespace GeometryImage;
 
 static void generateTestGeometries([[maybe_unused]] VehicleGeometryImageProvider &provider)

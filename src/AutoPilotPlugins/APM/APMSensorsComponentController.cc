@@ -52,7 +52,13 @@ void APMSensorsComponentController::_appendStatusLog(const QString &text)
     Q_ASSERT(_statusLog);
 
     const QString varText = text;
-    (void) QMetaObject::invokeMethod(_statusLog, "append", varText);
+    (void) QMetaObject::invokeMethod(
+        _statusLog,
+        "append",
+        Qt::AutoConnection,
+        Q_ARG(QVariant, varText)
+    );
+
 }
 
 void APMSensorsComponentController::_startLogCalibration()

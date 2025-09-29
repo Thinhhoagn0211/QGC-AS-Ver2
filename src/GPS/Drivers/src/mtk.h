@@ -117,7 +117,7 @@ private:
 
 	sensor_gps_s *_gps_position {nullptr};
 	mtk_decode_state_t _decode_state{MTK_DECODE_UNINIT};
-	uint8_t _mtk_revision{};
+	uint8_t _mtk_revision{0};
 	unsigned _rx_count{};
 	uint8_t _rx_ck_a{};
 	uint8_t _rx_ck_b{};

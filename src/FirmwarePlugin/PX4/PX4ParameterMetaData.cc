@@ -18,7 +18,7 @@
 #include <QtCore/QDir>
 #include <QtCore/QDebug>
 #include <QtCore/QXmlStreamReader>
-
+#include <QMetaType>
 QGC_LOGGING_CATEGORY(PX4ParameterMetaDataLog, "PX4ParameterMetaDataLog")
 
 PX4ParameterMetaData::PX4ParameterMetaData(QObject* parent)
@@ -71,7 +71,7 @@ QVariant PX4ParameterMetaData::_stringToTypedVariant(const QString& string, Fact
         break;
     }
     
-    *convertOk = var.convert(QMetaType(convertTo));
+    *convertOk = var.convert(static_cast<int>(convertTo));
     
     return var;
 }

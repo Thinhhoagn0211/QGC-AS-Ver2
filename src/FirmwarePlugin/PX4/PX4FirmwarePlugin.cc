@@ -16,6 +16,7 @@
 #include "ParameterManager.h"
 #include "Vehicle.h"
 
+#include <QtCore/QtMath>
 #include <QDebug>
 #include <QString>
 
@@ -291,10 +292,10 @@ void PX4FirmwarePlugin::pauseVehicle(Vehicle* vehicle) const
                             -1.0f,
                             MAV_DO_REPOSITION_FLAGS_CHANGE_MODE,
                             0.0f,
-                            NAN,
-                            NAN,
-                            NAN,
-                            NAN);
+                            std::numeric_limits<double>::quiet_NaN(),
+                            std::numeric_limits<double>::quiet_NaN(),
+                            std::numeric_limits<double>::quiet_NaN(),
+                            std::numeric_limits<double>::quiet_NaN());
 }
 
 void PX4FirmwarePlugin::guidedModeRTL(Vehicle* vehicle, bool smartRTL) const
@@ -346,7 +347,7 @@ void PX4FirmwarePlugin::guidedModeTakeoff(Vehicle* vehicle, double takeoffAltRel
         true,                                   // show error is fails
         -1,                                     // No pitch requested
         0, 0,                                   // param 2-4 unused
-        NAN, NAN, NAN,                          // No yaw, lat, lon
+        std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN(),                          // No yaw, lat, lon
         static_cast<float>(takeoffAltAMSL));    // AMSL altitude
 }
 
@@ -413,7 +414,7 @@ void PX4FirmwarePlugin::guidedModeGotoLocation(Vehicle* vehicle, const QGeoCoord
                                    -1.0f,
                                    MAV_DO_REPOSITION_FLAGS_CHANGE_MODE,
                                    0.0f,
-                                   NAN,
+                                   std::numeric_limits<double>::quiet_NaN(),
                                    gotoCoord.latitude(),
                                    gotoCoord.longitude(),
                                    vehicle->altitudeAMSL()->rawValue().toFloat());
@@ -424,7 +425,7 @@ void PX4FirmwarePlugin::guidedModeGotoLocation(Vehicle* vehicle, const QGeoCoord
                                 -1.0f,
                                 MAV_DO_REPOSITION_FLAGS_CHANGE_MODE,
                                 0.0f,
-                                NAN,
+                                std::numeric_limits<double>::quiet_NaN(),
                                 static_cast<float>(gotoCoord.latitude()),
                                 static_cast<float>(gotoCoord.longitude()),
                                 vehicle->altitudeAMSL()->rawValue().toFloat());
@@ -526,7 +527,7 @@ void PX4FirmwarePlugin::guidedModeChangeGroundSpeedMetersSecond(Vehicle* vehicle
         static_cast<float>(groundspeed),       // groundspeed setpoint
         -1,                                   // throttle
         0,                                    // 0: absolute speed, 1: relative to current
-        NAN, NAN,NAN);                        // param 5-7 unused
+        std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN(),std::numeric_limits<double>::quiet_NaN());                        // param 5-7 unused
 }
 
 void PX4FirmwarePlugin::guidedModeChangeEquivalentAirspeedMetersSecond(Vehicle* vehicle, double airspeed_equiv) const
@@ -540,7 +541,7 @@ void PX4FirmwarePlugin::guidedModeChangeEquivalentAirspeedMetersSecond(Vehicle* 
         static_cast<float>(airspeed_equiv),       // groundspeed setpoint
         -1,                                   // throttle
         0,                                    // 0: absolute speed, 1: relative to current
-        NAN, NAN,NAN);                        // param 5-7 unused
+        std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN(),std::numeric_limits<double>::quiet_NaN());                        // param 5-7 unused
 }
 
 void PX4FirmwarePlugin::guidedModeChangeHeading(Vehicle* vehicle, const QGeoCoordinate &headingCoord) const
@@ -560,7 +561,7 @@ void PX4FirmwarePlugin::guidedModeChangeHeading(Vehicle* vehicle, const QGeoCoor
         MAV_DO_REPOSITION_FLAGS_CHANGE_MODE,    // switch to guided mode
         0.0f,                                   // reserved
         radians,                                // change heading
-        NAN, NAN, NAN                           // no change lat, lon, alt
+        std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN()                           // no change lat, lon, alt
     );
 }
 

@@ -2,9 +2,8 @@
 #include "QGCLoggingCategory.h"
 
 #include <QtCore/QDir>
-#include <QtCore/private/qzipreader_p.h>
-#include <QtCore/private/qzipwriter_p.h>
-
+#include <private/qzipwriter_p.h>
+#include <private/qzipreader_p.h>
 QGC_LOGGING_CATEGORY(QGCZipLog, "qgc.utilities.compression.qgczip")
 
 namespace QGCZip {
@@ -71,7 +70,7 @@ bool unzipFile(const QString &zipFilePath, const QString &outputDirectoryPath)
         return false;
     }
 
-    const QList<QZipReader::FileInfo> allFiles = zipReader.fileInfoList();
+    const QVector<QZipReader::FileInfo> allFiles = zipReader.fileInfoList();
 
     for (const QZipReader::FileInfo &fileInfo : allFiles) {
         QString filePath = outputDirectoryPath + "/" + fileInfo.filePath;

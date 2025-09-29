@@ -26,14 +26,14 @@ set_source_files_properties(QGCApplication.cc PROPERTIES COMPILE_DEFINITIONS APP
 
 add_subdirectory(ADSB)
 add_subdirectory(AnalyzeView)
-add_subdirectory(Android)
+# add_subdirectory(Android)
 add_subdirectory(API)
 add_subdirectory(AutoPilotPlugins)
 add_subdirectory(Camera)
 add_subdirectory(Comms)
 add_subdirectory(FactSystem)
 add_subdirectory(FirmwarePlugin)
-add_subdirectory(FlightDisplay)
+# add_subdirectory(FlightDisplay)
 add_subdirectory(FlightMap)
 add_subdirectory(FollowMe)
 add_subdirectory(Gimbal)
@@ -46,11 +46,10 @@ add_subdirectory(QmlControls)
 add_subdirectory(QtLocationPlugin)
 add_subdirectory(Settings)
 add_subdirectory(Terrain)
-add_subdirectory(UI)
+# add_subdirectory(UI)
 add_subdirectory(Utilities)
 add_subdirectory(Vehicle)
 add_subdirectory(VideoManager)
-add_subdirectory(Viewer3D)
 
 target_link_libraries(qgc
 	PRIVATE
@@ -63,14 +62,18 @@ target_link_libraries(qgc
 
 		ADSB
 		AnalyzeView
-		Android
+		# Android
         API
-		AutoPilotPlugins
-        Camera
+		
+        
 		Comms
+		FactGroups
 		FactSystem
         FirmwarePlugin
-        FlightDisplay
+		AutoPilotPlugins
+		Generic
+		Camera
+        # FlightDisplay
         FlightMap
         FollowMe
         Gimbal
@@ -81,16 +84,24 @@ target_link_libraries(qgc
         PositionManager
         QmlControls
         QtLocationPlugin
+		LocationProviders
+		TerrainProviders
         Settings
         Terrain
-        UI
+        # UI
         Utilities
 		Geo
 		LibEvents
-		FactGroups
         Vehicle
         VideoManager
-        Viewer3D
+		VideoReceiver
+		GStreamer
+		Audio
+		Actuators
+		Compression
+		ComponentInfomation
+		MockLink
+		AirLink
 		z # zlib
 )
 

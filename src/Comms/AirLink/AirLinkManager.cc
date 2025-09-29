@@ -20,7 +20,8 @@
 
 QGC_LOGGING_CATEGORY(AirLinkManagerLog, "qgc.airlink.airlinkmanager");
 
-Q_APPLICATION_STATIC(AirLinkManager, _airLinkManager);
+// Q_APPLICATION_STATIC(AirLinkManager, _airLinkManager);
+Q_GLOBAL_STATIC(AirLinkManager, _airLinkManager);
 
 AirLinkManager::AirLinkManager(QObject *parent)
     : QObject(parent)

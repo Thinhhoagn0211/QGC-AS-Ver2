@@ -10,7 +10,7 @@
 #pragma once
 
 #include <optional>
-
+#include <memory>
 #include <QtCore/QCommandLineParser>
 #include <QtCore/QStringList>
 

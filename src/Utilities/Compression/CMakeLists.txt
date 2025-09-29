@@ -1,7 +1,7 @@
 
 set(XZ_EMBEDDED_DIR ${CMAKE_SOURCE_DIR}/libs/xz-embedded)
 
-add_library(compression
+add_library(Compression
 	QGCLZMA.cc
 	QGCLZMA.h
 	QGCZip.cc
@@ -20,18 +20,19 @@ add_library(compression
 	${XZ_EMBEDDED_DIR}/linux/lib/xz/xz_dec_stream.c
 )
 
-target_compile_definitions(compression PRIVATE XZ_DEC_ANY_CHECK XZ_USE_CRC64)
+target_compile_definitions(Compression PRIVATE XZ_DEC_ANY_CHECK XZ_USE_CRC64)
 
-target_link_libraries(compression
+target_link_libraries(Compression
 	Qt5::Core
 
 	qgc
 )
 
-target_include_directories(compression
+target_include_directories(Compression
 	INTERFACE
 		${CMAKE_CURRENT_SOURCE_DIR}
 	PRIVATE
+		${Qt5Core_PRIVATE_INCLUDE_DIRS}
 		${XZ_EMBEDDED_DIR}/userspace
 		${XZ_EMBEDDED_DIR}/linux/include/linux
 )

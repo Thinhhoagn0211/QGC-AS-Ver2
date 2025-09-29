@@ -497,8 +497,8 @@ void GimbalController::sendPitchBodyYaw(float pitch, float yaw, bool showError)
         showError,
         pitch,
         yaw,
-        NAN,
-        NAN,
+        std::numeric_limits<double>::quiet_NaN(),
+        std::numeric_limits<double>::quiet_NaN(),
         flags,
         0,
         _activeGimbal->deviceId()->rawValue().toUInt());
@@ -535,8 +535,8 @@ void GimbalController::sendPitchAbsoluteYaw(float pitch, float yaw, bool showErr
         showError,
         pitch,
         yaw,
-        NAN,
-        NAN,
+        std::numeric_limits<double>::quiet_NaN(),
+        std::numeric_limits<double>::quiet_NaN(),
         flags,
         0,
         _activeGimbal->deviceId()->rawValue().toUInt());
@@ -574,8 +574,8 @@ void GimbalController::sendRate()
         _activeGimbal->managerCompid()->rawValue().toUInt(),
         MAV_CMD_DO_GIMBAL_MANAGER_PITCHYAW,
         false,
-        NAN,
-        NAN,
+        std::numeric_limits<double>::quiet_NaN(),
+        std::numeric_limits<double>::quiet_NaN(),
         _activeGimbal->pitchRate(),
         _activeGimbal->yawRate(),
         flags,
@@ -623,8 +623,8 @@ void GimbalController::sendPitchYawFlags(uint32_t flags)
         true,
         _activeGimbal->absolutePitch()->rawValue().toFloat(),
         yaw_in_vehicle_frame ? _activeGimbal->bodyYaw()->rawValue().toFloat() : _activeGimbal->absoluteYaw()->rawValue().toFloat(),
-        NAN,
-        NAN,
+        std::numeric_limits<double>::quiet_NaN(),
+        std::numeric_limits<double>::quiet_NaN(),
         flags,
         0,
         _activeGimbal->deviceId()->rawValue().toUInt());
@@ -645,8 +645,8 @@ void GimbalController::acquireGimbalControl()
         MAVLinkProtocol::getComponentId(), // Set us in primary control
         -1.f, // Leave secondary unchanged
         -1.f, // Leave secondary unchanged
-        NAN, // Reserved
-        NAN, // Reserved
+        std::numeric_limits<double>::quiet_NaN(), // Reserved
+        std::numeric_limits<double>::quiet_NaN(), // Reserved
         _activeGimbal->deviceId()->rawValue().toUInt());
 }
 
@@ -665,7 +665,7 @@ void GimbalController::releaseGimbalControl()
         -3.f, // Release primary control if we have control
         -1.f, // Leave secondary control unchanged
         -1.f, // Leave secondary control unchanged
-        NAN, // Reserved
-        NAN, // Reserved
+        std::numeric_limits<double>::quiet_NaN(), // Reserved
+        std::numeric_limits<double>::quiet_NaN(), // Reserved
         _activeGimbal->deviceId()->rawValue().toUInt());
 }

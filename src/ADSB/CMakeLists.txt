@@ -14,4 +14,4 @@ target_link_libraries(ADSB
 		qgc
 )
 
-target_include_directories(ADSB PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(ADSB PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

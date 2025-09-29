@@ -181,22 +181,22 @@ private:
 
 	bool _testing_connection{false};
 	/** counts decoded sentence when testing connection */
-	unsigned _sentence_cnt{};
+	unsigned _sentence_cnt{0};
 
-	uint16_t _erb_payload_len{};
+	uint16_t _erb_payload_len{0};
 
-	uint32_t _last_POS_timeGPS{};
-	uint32_t _last_VEL_timeGPS{};
+	uint32_t _last_POS_timeGPS{0};
+	uint32_t _last_VEL_timeGPS{0};
 	bool _POS_received{false};
 	bool _VEL_received{false};
 
 
 	///// ERB messages caches /////
-	uint8_t _fix_type{};
-	uint8_t _fix_status{};
-	uint8_t _satellites_used{};
-	float _hdop{};
-	float _vdop{};
+	uint8_t _fix_type{0};
+	uint8_t _fix_status{0};
+	uint8_t _satellites_used{0};
+	float _hdop{0};
+	float _vdop{0};
 
 
 	/** Feed ERB parser with received bytes from serial

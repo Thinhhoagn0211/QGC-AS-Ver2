@@ -16,6 +16,7 @@
 #include "QGCLoggingCategory.h"
 
 #include <QtCore/QDir>
+#include <QDateTime>
 
 QGC_LOGGING_CATEGORY(GeoTagWorkerLog, "qgc.analyzeview.geotagworker")
 

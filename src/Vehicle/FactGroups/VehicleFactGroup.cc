@@ -10,7 +10,7 @@
 #include "VehicleFactGroup.h"
 #include "Vehicle.h"
 #include "QGC.h"
-
+#include <QtMath>
 #include <QtGui/QQuaternion>
 #include <QtGui/QVector3D>
 

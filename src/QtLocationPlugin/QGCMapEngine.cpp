@@ -17,7 +17,7 @@
 #include "QGCTileCacheWorker.h"
 #include "QGCTileSet.h"
 #include "QGeoFileTileCacheQGC.h"
-
+#include <QtCore/qmath.h>
 QGC_LOGGING_CATEGORY(QGCMapEngineLog, "qgc.qtlocationplugin.qgcmapengine")
 
 Q_GLOBAL_STATIC(QGCMapEngine, _mapEngine)
@@ -80,7 +80,12 @@ void QGCMapEngine::init(const QString &databasePath)
 bool QGCMapEngine::addTask(QGCMapTask *task)
 {
     bool result = false;
-    (void) QMetaObject::invokeMethod(m_worker, &QGCCacheWorker::enqueueTask, Qt::DirectConnection, qReturnArg(result), task);
+    (void) QMetaObject::invokeMethod(
+        m_worker,
+        "enqueueTask",                          // method name as string
+        Qt::DirectConnection,
+        Q_RETURN_ARG(bool, result),             // return value
+        Q_ARG(QGCMapTask*, task));              // argument
     return result;
 }
 

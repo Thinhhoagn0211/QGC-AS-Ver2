@@ -109,8 +109,8 @@ private:
 	 */
 	void receiveWait(unsigned timeout_min);
 
-	void sendSurveyInStatusUpdate(bool active, bool valid, double latitude = static_cast<double>(NAN),
-				      double longitude = static_cast<double>(NAN), float altitude = NAN);
+	void sendSurveyInStatusUpdate(bool active, bool valid, double latitude = static_cast<double>(std::numeric_limits<double>::quiet_NaN()),
+				      double longitude = static_cast<double>(std::numeric_limits<double>::quiet_NaN()), float altitude = std::numeric_limits<double>::quiet_NaN());
 
 	/**
 	 * Write a command and wait for a (N)Ack
@@ -128,11 +128,11 @@ private:
 
 	uint8_t _rx_buffer[ASHTECH_RECV_BUFFER_SIZE];
 	uint16_t _rx_buffer_bytes{};
-	uint64_t _last_timestamp_time{};
+	uint64_t _last_timestamp_time{0};
 
 	float _heading_offset;
 
-	gps_abstime _survey_in_start{};
+	gps_abstime _survey_in_start{0};
 
 	sensor_gps_s *_gps_position {nullptr};
 

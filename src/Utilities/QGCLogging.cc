@@ -17,6 +17,9 @@
 #include <QtCore/QGlobalStatic>
 #include <QtCore/QStringListModel>
 #include <QtCore/QTextStream>
+#include <QFileInfo>
+#include <QDir>
+#include <QSaveFile>
 
 QGC_LOGGING_CATEGORY(QGCLoggingLog, "qgc.utilities.qgclogging")
 

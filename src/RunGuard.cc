@@ -12,7 +12,8 @@
 #include <QtCore/QCryptographicHash>
 #include <QtCore/QDir>
 #include <QtCore/QStandardPaths>
-
+#include <QDebug>
+#include <QLockFile>
 RunGuard::RunGuard(const QString &key)
     : _key(key)
     , _lockFilePath(lockDir() + QLatin1String("/qgc-") + generateKeyHash(key, QLatin1String("_lock")) + QLatin1String(".lock"))
@@ -44,10 +45,10 @@ bool RunGuard::isAnotherRunning()
     case QLockFile::LockFailedError:
         return true;
     case QLockFile::PermissionError:
-        qWarning() << "QLockFile PermissionError: Unable to access lock file at" << _lockFile.fileName();
+        qWarning() << "QLockFile PermissionError: Unable to access lock file at" << _lockFilePath;
         break;
     case QLockFile::UnknownError:
-        qWarning() << "QLockFile UnknownError: An unknown error occurred with lock file at" << _lockFile.fileName();
+        qWarning() << "QLockFile UnknownError: An unknown error occurred with lock file at" << _lockFilePath;
         break;
     default:
         break;

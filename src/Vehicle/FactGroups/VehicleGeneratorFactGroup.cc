@@ -9,7 +9,7 @@
 
 #include "VehicleGeneratorFactGroup.h"
 #include "Vehicle.h"
-
+#include <QBitArray>
 VehicleGeneratorFactGroup::VehicleGeneratorFactGroup(QObject *parent)
     : FactGroup(1000, QStringLiteral(":/json/Vehicle/GeneratorFact.json"), parent)
 {
@@ -85,7 +85,7 @@ void VehicleGeneratorFactGroup::_updateGeneratorFlags(const QVariant &value)
 
     const QBitArray bitsetFlags(23);
     for (qsizetype i = 0; i < bitsetFlags.size(); i++) {
-        if (bitsetFlags[i]) {
+        if (bitsetFlags.testBit(i)) {
             _flagsListGenerator.append(1);
         } else {
             _flagsListGenerator.append(0);

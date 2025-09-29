@@ -29,8 +29,13 @@ signals:
 
 private:
     static void         append  (QQmlListProperty<QObject>* qmlListProperty, QObject* value);
-    static qsizetype    count   (QQmlListProperty<QObject>* qmlListProperty);
-    static QObject*     at      (QQmlListProperty<QObject>*, qsizetype index);
+    #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+        static qsizetype count(QQmlListProperty<QObject>* qmlListProperty);
+        static QObject* at(QQmlListProperty<QObject>* qmlListProperty, qsizetype index);
+    #else
+        static int count(QQmlListProperty<QObject>* qmlListProperty);
+        static QObject* at(QQmlListProperty<QObject>* qmlListProperty, int index);
+    #endif
     static void         clear   (QQmlListProperty<QObject>* qmlListProperty);
 
     QList<QObject*> _objectList;

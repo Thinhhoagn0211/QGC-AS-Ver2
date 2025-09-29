@@ -17,11 +17,14 @@ ToolStripActionList::ToolStripActionList(QObject* parent)
 
 QQmlListProperty<QObject> ToolStripActionList::model(void)
 {
-    return QQmlListProperty<QObject>(this, this,
-             &ToolStripActionList::append,
-             &ToolStripActionList::count,
-             &ToolStripActionList::at,
-             &ToolStripActionList::clear);
+    return QQmlListProperty<QObject>(
+        this,
+        this,
+        &ToolStripActionList::append,
+        &ToolStripActionList::count,
+        &ToolStripActionList::at,
+        &ToolStripActionList::clear
+    );
 }
 
 void ToolStripActionList::append(QQmlListProperty<QObject>* qmlListProperty, QObject* value) {
@@ -32,10 +35,10 @@ void ToolStripActionList::clear(QQmlListProperty<QObject>* qmlListProperty) {
     reinterpret_cast<ToolStripActionList*>(qmlListProperty->data)->_objectList.clear();
 }
 
-QObject* ToolStripActionList::at(QQmlListProperty<QObject>* qmlListProperty, qsizetype index) {
-    return reinterpret_cast<ToolStripActionList*>(qmlListProperty->data)->_objectList[index];
+int ToolStripActionList::count(QQmlListProperty<QObject>* qmlListProperty) {
+    return reinterpret_cast<ToolStripActionList*>(qmlListProperty->data)->_objectList.count();
 }
 
-qsizetype ToolStripActionList::count(QQmlListProperty<QObject>* qmlListProperty) {
-    return reinterpret_cast<ToolStripActionList*>(qmlListProperty->data)->_objectList.count();
+QObject* ToolStripActionList::at(QQmlListProperty<QObject>* qmlListProperty, int index) {
+    return reinterpret_cast<ToolStripActionList*>(qmlListProperty->data)->_objectList[index];
 }

@@ -177,7 +177,7 @@ contains (CONFIG, QGC_DISABLE_PX4_PLUGIN_FACTORY) {
 }
 
 # Bluetooth
-contains (DEFINES, QGC_DISABLE_BLUETOOTH) {
+contains(DEFINES, QGC_DISABLE_BLUETOOTH) {
     message("Bluetooth support disabled (manual override from command line)")
     DEFINES -= QGC_ENABLE_BLUETOOTH
 } else:exists(user_config.pri):infile(user_config.pri, DEFINES, QGC_DISABLE_BLUETOOTH) {
@@ -260,12 +260,12 @@ QT += \
         multimedia
 }
 
-AndroidBuild || iOSBuild {
-    # Android and iOS don't unclude these
-} else {
-    QT += \
-        serialport \
-}
+#AndroidBuild || iOSBuild {
+#    # Android and iOS don't unclude these
+#} else {
+#    QT += \
+#        serialport \
+#}
 
 contains(DEFINES, QGC_ENABLE_BLUETOOTH) {
 QT += \
@@ -369,7 +369,8 @@ INCLUDEPATH += \
     include/UI \
     src \
     src/ADSB \
-    src/api \
+    src/API \
+#    src/Android \
     src/AnalyzeView \
     src/Camera \
     src/Compression \
@@ -389,9 +390,11 @@ INCLUDEPATH += \
     src/PositionManager \
     src/QmlControls \
     src/QtLocationPlugin \
+    src/QtLocationPlugin/Providers \
     src/QtLocationPlugin/QMLControl \
     src/Settings \
     src/Terrain \
+    src/Terrain/Providers \
     src/Vehicle \
     src/Audio \
     src/Comms \
@@ -399,10 +402,12 @@ INCLUDEPATH += \
     src/Comms/MockLink \
     src/input \
     src/lib/qmapcontrol \
+    src/Utilities \
+    src/Utilities/Compression \
     src/UI \
     src/UI/AppSettings \
     src/UI/FirstRunPrompDialogs \
-    src/UI/toolbat
+    src/UI/toolbar
 
 contains (DEFINES, QGC_ENABLE_PAIRING) {
     INCLUDEPATH += \
@@ -646,15 +651,15 @@ HEADERS += \
     src/AnalyzeView/MAVLinkMessage.h \
     src/AnalyzeView/MAVLinkMessageField.h \
     src/AnalyzeView/MAVLinkSystem.h \
-    src/Android/AndroidInterface.h \
-    src/Android/AndroidSerial.h \
-    src/Android/qtandroidserialport/qserialport.h \
-    src/Android/qtandroidserialport/qserialport_p.h \
-    src/Android/qtandroidserialport/qserialportglobal.h \
-    src/Android/qtandroidserialport/qserialportinfo.h \
-    src/Android/qtandroidserialport/qserialportinfo_p.h \
-    src/Android/qtandroidserialport/qtserialportexports.h \
-    src/Android/qtandroidserialport/qtserialportversion.h \
+#    src/Android/AndroidInterface.h \
+#    src/Android/AndroidSerial.h \
+#    src/Android/qtandroidserialport/qserialport.h \
+#    src/Android/qtandroidserialport/qserialport_p.h \
+#    src/Android/qtandroidserialport/qserialportglobal.h \
+#    src/Android/qtandroidserialport/qserialportinfo.h \
+#    src/Android/qtandroidserialport/qserialportinfo_p.h \
+#    src/Android/qtandroidserialport/qtserialportexports.h \
+#    src/Android/qtandroidserialport/qtserialportversion.h \
     src/API/QmlComponentInfo.h \
     src/AutoPilotPlugins/APM/APMAirframeComponent.h \
     src/AutoPilotPlugins/APM/APMAutoPilotPlugin.h \
@@ -862,8 +867,6 @@ HEADERS += \
     src/VideoManager/VideoReceiver/GStreamer/GStreamer.h \
     src/VideoManager/VideoReceiver/GStreamer/GStreamerHelpers.h \
     src/VideoManager/VideoReceiver/GStreamer/GstVideoReceiver.h \
-    src/VideoManager/VideoReceiver/QtMultimedia/QtMultimediaReceiver.h \
-    src/VideoManager/VideoReceiver/QtMultimedia/UVCReceiver.h \
     src/Viewer3D/OsmParserThread.h \
     src/Viewer3D/Viewer3DTileQuery.h \
     src/Viewer3D/Viewer3DTileReply.h \
@@ -931,11 +934,11 @@ HEADERS += \
 
 iOSBuild {
     OBJECTIVE_SOURCES += \
-        src/MobileScreenMgr.mm \
+        src/Utilities/MobileScreenMgr.mm \
 }
 
 AndroidBuild {
-    SOURCES += src/MobileScreenMgr.cc \
+    SOURCES += src/Utilities/MobileScreenMgr.cc \
     src/Joystick/JoystickAndroid.cc \
 }
 
@@ -1444,13 +1447,13 @@ contains (CONFIG, DISABLE_VIDEOSTREAMING) {
 #-------------------------------------------------------------------------------------
 # Android
 
-AndroidBuild {
-    contains (CONFIG, DISABLE_BUILTIN_ANDROID) {
-        message("Skipping builtin support for Android")
-    } else {
-        include(android.pri)
-    }
-}
+#AndroidBuild {
+#    contains (CONFIG, DISABLE_BUILTIN_ANDROID) {
+#        message("Skipping builtin support for Android")
+#    } else {
+#        include(android.pri)
+#    }
+#}
 
 #-------------------------------------------------------------------------------------
 #
@@ -1484,180 +1487,18 @@ contains (CONFIG, QGC_DISABLE_INSTALLER_SETUP) {
 DISTFILES += \
     src/QmlControls/QGroundControl/Specific/qmldir
 
-#
-# Steps for "install" target on Linux
-#
+#-------------------------------------------------
+# Linux install rules
+#-------------------------------------------------
 LinuxBuild {
     target.path = $${PREFIX}/bin/
-
-    share_qgroundcontrol.path = $${PREFIX}/share/qgroundcontrol/
-    share_qgroundcontrol.files = $${IN_PWD}/resources/
-
-    share_icons.path = $${PREFIX}/share/icons/hicolor/128x128/apps/
-    share_icons.files = $${IN_PWD}/resources/icons/qgroundcontrol.png
-    share_metainfo.path = $${PREFIX}/share/metainfo/
-    share_metainfo.files = $${IN_PWD}/deploy/org.mavlink.qgroundcontrol.metainfo.xml
-    share_applications.path = $${PREFIX}/share/applications/
-    share_applications.files = $${IN_PWD}/deploy/qgroundcontrol.desktop
-
-    INSTALLS += target share_qgroundcontrol share_icons share_metainfo share_applications
-}
-\
-        src/AutoPilotPlugins/PX4/FlightModesComponent.cc \
-        src/AutoPilotPlugins/PX4/PX4AirframeLoader.cc \
-        src/AutoPilotPlugins/PX4/PX4AutoPilotPlugin.cc \
-        src/AutoPilotPlugins/PX4/PX4FlightBehavior.cc \
-        src/AutoPilotPlugins/PX4/PX4RadioComponent.cc \
-        src/AutoPilotPlugins/PX4/PX4SimpleFlightModesController.cc \
-        src/AutoPilotPlugins/PX4/PX4TuningComponent.cc \
-        src/AutoPilotPlugins/PX4/PowerComponent.cc \
-        src/AutoPilotPlugins/PX4/PowerComponentController.cc \
-        src/AutoPilotPlugins/PX4/SafetyComponent.cc \
-        src/AutoPilotPlugins/PX4/SensorsComponent.cc \
-        src/AutoPilotPlugins/PX4/SensorsComponentController.cc \
-        src/FirmwarePlugin/PX4/PX4FirmwarePlugin.cc \
-        src/FirmwarePlugin/PX4/PX4ParameterMetaData.cc \
-}
-
-PX4FirmwarePluginFactory {
-    HEADERS   += src/FirmwarePlugin/PX4/PX4FirmwarePluginFactory.h
-    SOURCES   += src/FirmwarePlugin/PX4/PX4FirmwarePluginFactory.cc
-}
-
-# Fact System code
-
-INCLUDEPATH += \
-    src/FactSystem \
-    src/FactSystem/FactControls \
-
-HEADERS += \
-    src/FactSystem/Fact.h \
-    src/FactSystem/FactControls/FactPanelController.h \
-    src/FactSystem/FactGroup.h \
-    src/FactSystem/FactMetaData.h \
-    src/FactSystem/FactSystem.h \
-    src/FactSystem/FactValueSliderListModel.h \
-    src/FactSystem/ParameterManager.h \
-    src/FactSystem/SettingsFact.h \
-
-SOURCES += \
-    src/FactSystem/Fact.cc \
-    src/FactSystem/FactControls/FactPanelController.cc \
-    src/FactSystem/FactGroup.cc \
-    src/FactSystem/FactMetaData.cc \
-    src/FactSystem/FactSystem.cc \
-    src/FactSystem/FactValueSliderListModel.cc \
-    src/FactSystem/ParameterManager.cc \
-    src/FactSystem/SettingsFact.cc \
-
-#-------------------------------------------------------------------------------------
-# MAVLink Inspector
-
-contains (DEFINES, QGC_DISABLE_MAVLINK_INSPECTOR) {
-    message("Disable mavlink inspector")
-} else {
-    HEADERS += \
-        src/AnalyzeView/MAVLinkInspectorController.h
-    SOURCES += \
-        src/AnalyzeView/MAVLinkInspectorController.cc
-    QT += \
-        charts
-}
-
-
-#-------------------------------------------------------------------------------------
-# Video Streaming
-
-INCLUDEPATH += \
-    src/VideoManager
-
-HEADERS += \
-    src/VideoManager/SubtitleWriter.h \
-    src/VideoManager/VideoManager.h
-
-SOURCES += \
-    src/VideoManager/SubtitleWriter.cc \
-    src/VideoManager/VideoManager.cc
-
-contains (CONFIG, DISABLE_VIDEOSTREAMING) {
-    message("Skipping support for video streaming (manual override from command line)")
-# Otherwise the user can still disable this feature in the user_config.pri file.
-} else:exists(user_config.pri):infile(user_config.pri, DEFINES, DISABLE_VIDEOSTREAMING) {
-    message("Skipping support for video streaming (manual override from user_config.pri)")
-} else {
-    include(src/VideoReceiver/VideoReceiver.pri)
-}
-
-!VideoEnabled {
-    INCLUDEPATH += \
-        src/VideoReceiver
-
-    HEADERS += \
-        src/VideoManager/GLVideoItemStub.h \
-        src/VideoReceiver/VideoReceiver.h
-
-    SOURCES += \
-        src/VideoManager/GLVideoItemStub.cc
-}
-
-#-------------------------------------------------------------------------------------
-# Android
-
-AndroidBuild {
-    contains (CONFIG, DISABLE_BUILTIN_ANDROID) {
-        message("Skipping builtin support for Android")
-    } else {
-        include(android.pri)
-    }
-}
-
-#-------------------------------------------------------------------------------------
-#
-# Localization
-#
-
-TRANSLATIONS += $$files($$PWD/translations/qgc_*.ts)
-CONFIG+=lrelease embed_translations
-
-#-------------------------------------------------------------------------------------
-#
-# Post link configuration
-#
-
-contains (CONFIG, QGC_DISABLE_BUILD_SETUP) {
-    message("Disable standard build setup")
-} else {
-    include(QGCPostLinkCommon.pri)
-}
-
-#
-# Installer targets
-#
-
-contains (CONFIG, QGC_DISABLE_INSTALLER_SETUP) {
-    message("Disable standard installer setup")
-} else {
-    include(QGCPostLinkInstaller.pri)
-}
-
-DISTFILES += \
-    src/QmlControls/QGroundControl/Specific/qmldir
-
-#
-# Steps for "install" target on Linux
-#
-LinuxBuild {
-    target.path = $${PREFIX}/bin/
-
-    share_qgroundcontrol.path = $${PREFIX}/share/qgroundcontrol/
-    share_qgroundcontrol.files = $${IN_PWD}/resources/
-
-    share_icons.path = $${PREFIX}/share/icons/hicolor/128x128/apps/
-    share_icons.files = $${IN_PWD}/resources/icons/qgroundcontrol.png
-    share_metainfo.path = $${PREFIX}/share/metainfo/
-    share_metainfo.files = $${IN_PWD}/deploy/org.mavlink.qgroundcontrol.metainfo.xml
-    share_applications.path = $${PREFIX}/share/applications/
-    share_applications.files = $${IN_PWD}/deploy/qgroundcontrol.desktop
-
+    share_qgroundcontrol.path = $${PREFIX}/share/qgroundcontrol
+    share_qgroundcontrol.files = qgroundcontrol-start.sh
+    share_icons.path = $${PREFIX}/share/icons/hicolor/scalable/apps
+    share_icons.files = resources/icons/qgroundcontrol.svg
+    share_metainfo.path = $${PREFIX}/share/metainfo
+    share_metainfo.files = resources/appdata/org.mavlink.qgroundcontrol.appdata.xml
+    share_applications.path = $${PREFIX}/share/applications
+    share_applications.files = resources/desktop/qgroundcontrol.desktop
     INSTALLS += target share_qgroundcontrol share_icons share_metainfo share_applications
 }

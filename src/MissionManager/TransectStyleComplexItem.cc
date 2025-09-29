@@ -20,7 +20,7 @@
 #include "KMLPlanDomDocument.h"
 #include "Vehicle.h"
 #include "QGCLoggingCategory.h"
-
+#include <QMetaMethod>
 #include <QtCore/QJsonArray>
 
 QGC_LOGGING_CATEGORY(TransectStyleComplexItemLog, "TransectStyleComplexItemLog")

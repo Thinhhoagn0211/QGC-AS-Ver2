@@ -20,7 +20,11 @@
 #include <QtGui/QCursor>
 #include <QtGui/QFontDatabase>
 #include <QtGui/QFontMetrics>
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #include <QtGui/QInputDevice>
+#else
+#include <QtGui/QTouchDevice>
+#endif
 
 #if defined(Q_OS_IOS)
 #include <sys/utsname.h>
@@ -51,12 +55,16 @@ int ScreenToolsController::mouseY()
 
 bool ScreenToolsController::hasTouch()
 {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     for (const auto &inputDevice: QInputDevice::devices()) {
         if (inputDevice->type() == QInputDevice::DeviceType::TouchScreen) {
             return true;
         }
     }
     return false;
+#else
+    return !QTouchDevice::devices().isEmpty();
+#endif
 }
 
 QString ScreenToolsController::iOSDevice()

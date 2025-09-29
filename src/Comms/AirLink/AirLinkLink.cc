@@ -106,7 +106,7 @@ void AirLinkConfiguration::setModemName(const QString &modemName)
 
 /*===========================================================================*/
 
-AirLinkLink::AirLinkLink(SharedLinkConfigurationPtr &config, QObject *parent)
+AirLinkLink::AirLinkLink(SharedLinkConfigurationPtr config, QObject *parent)
     : UDPLink(config)
     , _airLinkConfig(qobject_cast<const AirLinkConfiguration*>(config.get()))
 {

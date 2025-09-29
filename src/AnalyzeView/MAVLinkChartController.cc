@@ -16,7 +16,7 @@
 #include <QtCharts/QAbstractSeries>
 #include <QtCore/QTimer>
 
-Q_DECLARE_METATYPE(QAbstractSeries*)
+Q_DECLARE_METATYPE(QtCharts::QAbstractSeries*)
 
 QGC_LOGGING_CATEGORY(MAVLinkChartControllerLog, "MAVLinkChartControllerLog")
 
@@ -24,17 +24,11 @@ MAVLinkChartController::MAVLinkChartController(QObject *parent)
     : QObject(parent)
     , _updateSeriesTimer(new QTimer(this))
 {
-    // qCDebug(MAVLinkChartControllerLog) << Q_FUNC_INFO << this;
-
-    (void) qRegisterMetaType<QAbstractSeries*>("QAbstractSeries*");
-
+    (void) qRegisterMetaType<QtCharts::QAbstractSeries*>("QAbstractSeries*");
     (void) connect(_updateSeriesTimer, &QTimer::timeout, this, &MAVLinkChartController::_refreshSeries);
 }
 
-MAVLinkChartController::~MAVLinkChartController()
-{
-    // qCDebug(MAVLinkChartControllerLog) << Q_FUNC_INFO << this;
-}
+MAVLinkChartController::~MAVLinkChartController() = default;
 
 void MAVLinkChartController::setInspectorController(MAVLinkInspectorController *controller)
 {
@@ -59,7 +53,6 @@ void MAVLinkChartController::setRangeYIndex(quint32 index)
     _rangeYIndex = index;
     emit rangeYIndexChanged();
 
-    // If not Auto, use defined range
     const qreal range = _inspectorController->rangeSt()[static_cast<int>(index)]->range;
     if (_rangeYIndex > 0) {
         _rangeYMin = -range;
@@ -92,7 +85,8 @@ void MAVLinkChartController::updateXRange()
     _rangeXMax = QDateTime::fromMSecsSinceEpoch(bootTime);
     emit rangeXMaxChanged();
 
-    _rangeXMin = QDateTime::fromMSecsSinceEpoch(bootTime - _inspectorController->timeScaleSt()[static_cast<int>(_rangeXIndex)]->timeScale);
+    _rangeXMin = QDateTime::fromMSecsSinceEpoch(
+        bootTime - _inspectorController->timeScaleSt()[static_cast<int>(_rangeXIndex)]->timeScale);
     emit rangeXMinChanged();
 }
 
@@ -103,18 +97,13 @@ void MAVLinkChartController::updateYRange()
     }
 
     qreal vmin = std::numeric_limits<qreal>::max();
-    qreal vmax = std::numeric_limits<qreal>::min();
+    qreal vmax = std::numeric_limits<qreal>::lowest();
     for (const QVariant &field : _chartFields) {
         QObject *const object = qvariant_cast<QObject*>(field);
         QGCMAVLinkMessageField *const pField = qobject_cast<QGCMAVLinkMessageField*>(object);
         if (pField) {
-            if (vmax < pField->rangeMax()) {
-                vmax = pField->rangeMax();
-            }
-
-            if (vmin > pField->rangeMin()) {
-                vmin = pField->rangeMin();
-            }
+            vmax = std::max(vmax, pField->rangeMax());
+            vmin = std::min(vmin, pField->rangeMin());
         }
     }
 
@@ -136,13 +125,13 @@ void MAVLinkChartController::_refreshSeries()
     for (QVariant &field : _chartFields) {
         QObject *const object = qvariant_cast<QObject*>(field);
         QGCMAVLinkMessageField *const pField = qobject_cast<QGCMAVLinkMessageField*>(object);
-        if(pField) {
+        if (pField) {
             pField->updateSeries();
         }
     }
 }
 
-void MAVLinkChartController::addSeries(QGCMAVLinkMessageField *field, QAbstractSeries *series)
+void MAVLinkChartController::addSeries(QGCMAVLinkMessageField *field, QtCharts::QAbstractSeries *series)
 {
     if (!field || !series) {
         return;
@@ -171,9 +160,9 @@ void MAVLinkChartController::delSeries(QGCMAVLinkMessageField *field)
     field->delSeries();
 
     const QVariant f = QVariant::fromValue(field);
-    const QList<QVariant>::const_iterator it = std::find(_chartFields.constBegin(), _chartFields.constEnd(), f);
-    if (it != _chartFields.constEnd()) {
-        (void) _chartFields.erase(it);
+    auto it = std::find(_chartFields.begin(), _chartFields.end(), f);
+    if (it != _chartFields.end()) {
+        _chartFields.erase(it);
         emit chartFieldsChanged();
 
         if (_chartFields.isEmpty()) {

@@ -22,6 +22,8 @@
 
 #include <QtCore/QEasingCurve>
 #include <QtCore/QFile>
+#include <QFile>
+#include <QDataStream>
 #include <QtCore/QStandardPaths>
 #include <QtCore/QVariantAnimation>
 

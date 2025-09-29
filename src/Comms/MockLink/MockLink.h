@@ -14,6 +14,7 @@
 #include "MAVLinkLib.h"
 #include "MockConfiguration.h"
 #include "MockLinkMissionItemHandler.h"
+#include "LinkConfiguration.h" // Add this include for SharedLinkConfigurationPtr
 
 #include <QtCore/QElapsedTimer>
 #include <QtCore/QLoggingCategory>
@@ -33,7 +34,7 @@ class MockLink : public LinkInterface
     Q_OBJECT
 
 public:
-    explicit MockLink(SharedLinkConfigurationPtr &config, QObject *parent = nullptr);
+    explicit MockLink(const SharedLinkConfigurationPtr &config, QObject *parent = nullptr);
     virtual ~MockLink();
 
     void run1HzTasks();
@@ -274,7 +275,7 @@ private:
         double angle = 0.0;
         double altitude = 0.0;                      ///< Store unique altitude for each vehicle
     };
-    QList<ADSBVehicle> _adsbVehicles;               ///< Store data for multiple ADS-B vehicles
+    QVector<ADSBVehicle> _adsbVehicles;               ///< Store data for multiple ADS-B vehicles
     QList<QGeoCoordinate> _adsbVehicleCoordinates;  ///< List for multiple vehicles
     static constexpr int _numberOfVehicles = 5;     ///< Number of ADS-B vehicles
     double _adsbAngles[_numberOfVehicles]{};        ///< Array for angles of each vehicle

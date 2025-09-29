@@ -1150,7 +1150,7 @@ private:
 
 	const Interface _interface{};
 
-	gps_abstime             _disable_cmd_last{};
+	gps_abstime             _disable_cmd_last{0};
 	sensor_gps_s           *_gps_position {nullptr};
 	satellite_info_s       *_satellite_info {nullptr};
 	ubx_ack_state_t         _ack_state{UBX_ACK_IDLE};
@@ -1164,18 +1164,18 @@ private:
 	bool _proto_ver_27_or_higher{false}; ///< true if protocol version 27 or higher detected
 	bool _use_nav_pvt{false};
 
-	uint8_t _rx_ck_a{};
-	uint8_t _rx_ck_b{};
+	uint8_t _rx_ck_a{0};
+	uint8_t _rx_ck_b{0};
 	uint8_t _dyn_model{7};  ///< ublox Dynamic platform model default 7: airborne with <2g acceleration
 
-	uint16_t _ack_waiting_msg{};
+	uint16_t _ack_waiting_msg{0};
 	uint16_t _rx_msg{};
-	uint16_t _rx_payload_index{};
-	uint16_t _rx_payload_length{};
+	uint16_t _rx_payload_index{0};
+	uint16_t _rx_payload_length{0};
 
-	uint32_t _ubx_version{};
+	uint32_t _ubx_version{0};
 
-	uint64_t _last_timestamp_time{};
+	uint64_t _last_timestamp_time{0};
 
 	Board _board{Board::unknown};
 

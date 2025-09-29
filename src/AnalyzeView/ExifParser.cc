@@ -13,7 +13,7 @@
 #include <QtCore/QByteArray>
 #include <QtCore/QDateTime>
 #include <QtCore/QtEndian>
-
+#include <cmath>
 QGC_LOGGING_CATEGORY(ExifParserLog, "qgc.analyzeview.exifparser")
 
 namespace ExifParser
@@ -75,7 +75,7 @@ QDateTime readTime(const QByteArray& buffer)
 {
     // Check for JPEG SOI marker (Start of Image)
     QByteArray jpegHeader("\xFF\xD8", 2);
-    if (buffer.size() < 2 || buffer.first(2) != jpegHeader) {
+    if (buffer.size() < 2 || buffer.left(2) != jpegHeader) {
         qCWarning(ExifParserLog) << "Not a valid JPEG file";
         return QDateTime();
     }
@@ -101,7 +101,8 @@ QDateTime readTime(const QByteArray& buffer)
 
     // Determine endianness (II for little-endian, MM for big-endian)
     size_t tiffHeader = exifStart + 6;
-    bool isLittleEndian = (buffer[tiffHeader] == 'I' && buffer[tiffHeader + 1] == 'I');
+    bool isLittleEndian = (buffer[static_cast<int>(tiffHeader)] == 'I' &&
+                       buffer[static_cast<int>(tiffHeader + 1)] == 'I');
 
     // Read the offset to the EXIF IFD from IFD0
     const size_t ifd0Offset = _readUint32(buffer, tiffHeader + 4, isLittleEndian);

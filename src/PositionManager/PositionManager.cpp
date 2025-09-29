@@ -14,7 +14,7 @@
 // #include "DeviceInfo.h"
 #include "QGCLoggingCategory.h"
 
-
+#include <cmath>
 #include <QtPositioning/QGeoPositionInfoSource>
 #include <QtPositioning/private/qgeopositioninfosource_p.h>
 #include <QtPositioning/QNmeaPositionInfoSource>
@@ -45,7 +45,11 @@ void QGCPositionManager::init()
         _simulatedSource = new SimulatedPosition(this);
         _setPositionSource(QGCPositionSource::Simulated);
     } else {
+    #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
         _checkPermission();
+    #else
+        _setupPositionSources(); 
+    #endif
     }
 }
 
@@ -67,6 +71,7 @@ void QGCPositionManager::_setupPositionSources()
     _setPositionSource(QGCPositionSource::InternalGPS);
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 void QGCPositionManager::_handlePermissionStatus(Qt::PermissionStatus permissionStatus)
 {
     if (permissionStatus == Qt::PermissionStatus::Granted) {
@@ -75,7 +80,6 @@ void QGCPositionManager::_handlePermissionStatus(Qt::PermissionStatus permission
         qCWarning(QGCPositionManagerLog) << Q_FUNC_INFO << "Location Permission Denied";
     }
 }
-
 void QGCPositionManager::_checkPermission()
 {
     QLocationPermission locationPermission;
@@ -90,6 +94,8 @@ void QGCPositionManager::_checkPermission()
         _handlePermissionStatus(permissionStatus);
     }
 }
+#endif
+
 
 void QGCPositionManager::setNmeaSourceDevice(QIODevice *device)
 {
@@ -139,15 +145,30 @@ void QGCPositionManager::_positionUpdated(const QGeoPositionInfo &update)
 
     _setGCSPosition(newGCSPosition);
 
-    if (update.hasAttribute(QGeoPositionInfo::DirectionAccuracy)) {
-        _gcsDirectionAccuracy = update.attribute(QGeoPositionInfo::DirectionAccuracy);
-        if (_gcsDirectionAccuracy <= kMinDirectionAccuracyDegrees) {
+    // if (update.hasAttribute(QGeoPositionInfo::DirectionAccuracy)) {
+    //     _gcsDirectionAccuracy = update.attribute(QGeoPositionInfo::DirectionAccuracy);
+    //     if (_gcsDirectionAccuracy <= kMinDirectionAccuracyDegrees) {
+    //         _setGCSHeading(update.attribute(QGeoPositionInfo::Direction));
+    //     }
+    // } else if (_usingPluginSource) {
+    //     _setGCSHeading(update.attribute(QGeoPositionInfo::Direction));
+    // }
+
+    #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+        if (update.hasAttribute(QGeoPositionInfo::DirectionAccuracy)) {
+            _gcsDirectionAccuracy = update.attribute(QGeoPositionInfo::DirectionAccuracy);
+            if (_gcsDirectionAccuracy <= kMinDirectionAccuracyDegrees) {
+                _setGCSHeading(update.attribute(QGeoPositionInfo::Direction));
+            }
+        } else if (_usingPluginSource) {
             _setGCSHeading(update.attribute(QGeoPositionInfo::Direction));
         }
-    } else if (_usingPluginSource) {
-        _setGCSHeading(update.attribute(QGeoPositionInfo::Direction));
-    }
-
+    #else
+        // Qt5 fallback: only Direction attribute is available
+        if (_usingPluginSource) {
+           _setGCSHeading(update.attribute(QGeoPositionInfo::Direction));
+        }
+    #endif
     emit positionInfoUpdated(update);
 }
 
@@ -210,9 +231,16 @@ void QGCPositionManager::_setPositionSource(QGCPositionSource source)
             _currentSource->setUpdateInterval(_updateInterval);
         #endif
         (void) connect(_currentSource, &QGeoPositionInfoSource::positionUpdated, this, &QGCPositionManager::_positionUpdated);
-        (void) connect(_currentSource, &QGeoPositionInfoSource::errorOccurred, this, [](QGeoPositionInfoSource::Error positioningError) {
-            qCWarning(QGCPositionManagerLog) << Q_FUNC_INFO << positioningError;
-        });
+        // (void) connect(_currentSource, &QGeoPositionInfoSource::errorOccurred, this, [](QGeoPositionInfoSource::Error positioningError) {
+        //     qCWarning(QGCPositionManagerLog) << Q_FUNC_INFO << positioningError;
+        // });
+
+        #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+            (void) connect(_currentSource, &QGeoPositionInfoSource::errorOccurred,
+                        this, [](QGeoPositionInfoSource::Error positioningError) {
+                qCWarning(QGCPositionManagerLog) << Q_FUNC_INFO << positioningError;
+            });
+        #endif
 
         // (void) connect(QGCCompass::instance(), &QGCCompass::positionUpdated, this, &QGCPositionManager::_positionUpdated);
 

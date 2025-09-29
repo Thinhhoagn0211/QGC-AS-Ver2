@@ -12,6 +12,7 @@
 #include <QtCore/QLoggingCategory>
 #include <QtCore/QObject>
 
+#include "SettingsManager.h"
 #include "ADSB.h"
 #include "MAVLinkLib.h"
 

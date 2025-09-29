@@ -58,7 +58,7 @@ protected:
 
 private:
     TileInfo_t _tileInfo{};
-    QList<QList<int16_t>> _elevationData;   ///< 2D elevation data array
+    QVector<QVector<int16_t>> _elevationData;   ///< 2D elevation data array
     double _cellSizeLat = 0.0;              ///< data grid size in latitude direction
     double _cellSizeLon = 0.0;              ///< data grid size in longitude direction
     bool _isValid = false;                  ///< data loaded is valid

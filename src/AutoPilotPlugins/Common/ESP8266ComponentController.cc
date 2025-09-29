@@ -12,6 +12,7 @@
 #include "QGCLoggingCategory.h"
 #include "Vehicle.h"
 
+#include <QtCore/QtEndian>
 #include <QtNetwork/QHostAddress>
 
 QGC_LOGGING_CATEGORY(ESP8266ComponentControllerLog, "qgc.autopilotplugins.common.esp8266componentcontroller")

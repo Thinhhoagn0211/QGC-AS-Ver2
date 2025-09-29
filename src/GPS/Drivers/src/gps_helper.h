@@ -146,9 +146,9 @@ typedef int (*GPSCallbackPtr)(GPSCallbackType type, void *data1, int data2, void
 
 
 struct SurveyInStatus {
-	double latitude;              /**< NAN if unknown/not set [deg] */
-	double longitude;             /**< NAN if unknown/not set [deg] */
-	float altitude;               /**< NAN if unknown/not set [m] */
+	double latitude;              /**< std::numeric_limits<double>::quiet_NaN() if unknown/not set [deg] */
+	double longitude;             /**< std::numeric_limits<double>::quiet_NaN() if unknown/not set [deg] */
+	float altitude;               /**< std::numeric_limits<double>::quiet_NaN() if unknown/not set [m] */
 	uint32_t mean_accuracy;       /**< [mm] */
 	uint32_t duration;            /**< [s] */
 	uint8_t flags;                /**< bit 0: valid, bit 1: active */
@@ -323,7 +323,7 @@ protected:
 	float _rate_lat_lon{0.0f};
 	float _rate_vel{0.0f};
 
-	uint64_t _interval_rate_start{};
+	uint64_t _interval_rate_start{0};
 };
 
 inline bool operator&(GPSHelper::GNSSSystemsMask a, GPSHelper::GNSSSystemsMask b)

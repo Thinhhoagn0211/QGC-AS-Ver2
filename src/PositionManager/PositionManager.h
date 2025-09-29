@@ -70,12 +70,15 @@ private:
     };
 
         void _setPositionSource(QGCPositionSource source);
-    #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-        void _handlePermissionStatus(QPermission::Status permissionStatus);
-        void _checkPermission();
-    #endif
-        void _setGCSHeading(qreal newGCSHeading);
-        void _setGCSPosition(const QGeoCoordinate &newGCSPosition);
+        void _setupPositionSources();
+
+        #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+            void _handlePermissionStatus(Qt::PermissionStatus permissionStatus);
+            void _checkPermission();
+        #endif
+
+            void _setGCSHeading(qreal newGCSHeading);
+            void _setGCSPosition(const QGeoCoordinate &newGCSPosition);
 
     bool _usingPluginSource = false;
     int _updateInterval = 0;

@@ -47,7 +47,7 @@ QList<MockLink::FlightMode_t> MockLink::_availableFlightModes = {
     { "MockLink Mode (delayed)",0,                          PX4CustomMode::AUTO_FOLLOW_TARGET,  true,       false},
 };
 
-MockLink::MockLink(SharedLinkConfigurationPtr &config, QObject *parent)
+MockLink::MockLink(const SharedLinkConfigurationPtr &config, QObject *parent)
     : LinkInterface(config, parent)
     , _mockConfig(qobject_cast<const MockConfiguration*>(_config.get()))
     , _firmwareType(_mockConfig->firmwareType())
@@ -254,7 +254,7 @@ void MockLink::_sendGimbalDeviceAttitudeStatus()
         (float*)&q,
         0.0f, 0.0f, 0.0f, // angular_velocity_x, y, z
         0, // failure flags
-        NAN, NAN,
+        std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN(),
         0); // gimbal_device_id
     respondWithMavlinkMessage(msg);
     (void) mavlink_msg_gimbal_device_attitude_status_pack_chan(
@@ -268,7 +268,7 @@ void MockLink::_sendGimbalDeviceAttitudeStatus()
         (float*)&q,
         0.0f, 0.0f, 0.0f, // angular_velocity_x, y, z
         0, // failure flags
-        NAN, NAN,
+        std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN(),
         0); // gimbal_device_id
     respondWithMavlinkMessage(msg);
 }

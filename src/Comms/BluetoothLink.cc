@@ -13,7 +13,6 @@
 #include "QGCLoggingCategory.h"
 
 #include <QtCore/QCoreApplication>
-#include <QtCore/QPermissions>
 #include <QtCore/QThread>
 
 QGC_LOGGING_CATEGORY(BluetoothLinkLog, "qgc.comms.bluetoothlink")
@@ -53,7 +52,7 @@ void BluetoothConfiguration::_initDeviceDiscoveryAgent()
     (void) connect(_deviceDiscoveryAgent, &QBluetoothDeviceDiscoveryAgent::deviceDiscovered, this, &BluetoothConfiguration::_deviceDiscovered);
     (void) connect(_deviceDiscoveryAgent, &QBluetoothDeviceDiscoveryAgent::canceled, this, &BluetoothConfiguration::scanningChanged);
     (void) connect(_deviceDiscoveryAgent, &QBluetoothDeviceDiscoveryAgent::finished, this, &BluetoothConfiguration::scanningChanged);
-    (void) connect(_deviceDiscoveryAgent, &QBluetoothDeviceDiscoveryAgent::errorOccurred, this, &BluetoothConfiguration::_onSocketErrorOccurred);
+    (void) connect(_deviceDiscoveryAgent, QOverload<QBluetoothDeviceDiscoveryAgent::Error>::of(&QBluetoothDeviceDiscoveryAgent::error), this, &BluetoothConfiguration::_onSocketErrorOccurred);
 
     if (BluetoothLinkLog().isDebugEnabled()) {
         (void) connect(_deviceDiscoveryAgent, &QBluetoothDeviceDiscoveryAgent::deviceUpdated, this, [this](const QBluetoothDeviceInfo &info, QBluetoothDeviceInfo::Fields updatedFields) {
@@ -205,7 +204,7 @@ void BluetoothWorker::setupSocket()
     (void) connect(_socket, &QBluetoothSocket::connected, this, &BluetoothWorker::_onSocketConnected);
     (void) connect(_socket, &QBluetoothSocket::disconnected, this, &BluetoothWorker::_onSocketDisconnected);
     (void) connect(_socket, &QBluetoothSocket::readyRead, this, &BluetoothWorker::_onSocketReadyRead);
-    (void) connect(_socket, &QBluetoothSocket::errorOccurred, this, &BluetoothWorker::_onSocketErrorOccurred);
+    (void) connect(_socket, QOverload<QBluetoothSocket::SocketError>::of(&QBluetoothSocket::error), this,   &BluetoothWorker::_onSocketErrorOccurred);
 
 #ifdef Q_OS_IOS
     (void) connect(_serviceDiscoveryAgent, &QBluetoothServiceDiscoveryAgent::serviceDiscovered, this, &BluetoothWorker::_serviceDiscovered);
@@ -237,7 +236,7 @@ void BluetoothWorker::connectLink()
         _serviceDiscoveryAgent->start();
     }
 #else
-    static constexpr QBluetoothUuid uuid = QBluetoothUuid(QBluetoothUuid::ServiceClassUuid::SerialPort);
+    static const QBluetoothUuid uuid = QBluetoothUuid(QBluetoothUuid::ServiceClassUuid::SerialPort);
     _socket->connectToService(_config->device().address, uuid);
 #endif
 }
@@ -289,7 +288,7 @@ void BluetoothWorker::writeData(const QByteArray &data)
         totalBytesWritten += bytesWritten;
     }
 
-    const QByteArray sent = data.first(totalBytesWritten);
+    const QByteArray sent = data.left(totalBytesWritten);
     emit dataSent(sent);
 }
 
@@ -448,26 +447,10 @@ void BluetoothLink::_writeBytes(const QByteArray& bytes)
 
 void BluetoothLink::_checkPermission()
 {
-    QBluetoothPermission permission;
-    permission.setCommunicationModes(QBluetoothPermission::Access);
-
-    const Qt::PermissionStatus permissionStatus = QCoreApplication::instance()->checkPermission(permission);
-    if (permissionStatus == Qt::PermissionStatus::Undetermined) {
-        QCoreApplication::instance()->requestPermission(permission, this, [this](const QPermission &permission) {
-            _handlePermissionStatus(permission.status());
-        });
-    } else {
-        _handlePermissionStatus(permissionStatus);
-    }
+    qCDebug(BluetoothLinkLog) << "Qt runtime Bluetooth permission check not available (requires Qt >= 6.6)";
 }
 
-void BluetoothLink::_handlePermissionStatus(Qt::PermissionStatus permissionStatus)
+void BluetoothLink::_handlePermissionStatus()
 {
-    if (permissionStatus != Qt::PermissionStatus::Granted) {
-        qCWarning(BluetoothLinkLog) << "Bluetooth Permission Denied";
-        _onErrorOccurred("Bluetooth Permission Denied");
-        _onDisconnected();
-    } else {
-        qCDebug(BluetoothLinkLog) << "Bluetooth Permission Granted";
-    }
+    qCDebug(BluetoothLinkLog) << "Bluetooth Permission Granted";
 }

@@ -11,7 +11,7 @@
 #include "QGCLoggingCategory.h"
 
 #include <QtCore/QtEndian>
-
+#include <cmath>
 QGC_LOGGING_CATEGORY(PX4LogParserLog, "qgc.analyzeview.px4logparser")
 
 // general message header

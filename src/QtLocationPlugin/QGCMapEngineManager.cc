@@ -26,7 +26,7 @@
 #include "QmlObjectListModel.h"
 #include "SettingsManager.h"
 
-using namespace Qt::StringLiterals;
+// using namespace Qt::StringLiterals;
 
 QGC_LOGGING_CATEGORY(QGCMapEngineManagerLog, "qgc.qtlocation.qmlcontrol.qgcmapenginemanagerlog")
 
@@ -200,7 +200,7 @@ QStringList QGCMapEngineManager::mapTypeList(const QString &provider)
     QStringList mapStringList = mapList();
     mapStringList = mapStringList.filter(QRegularExpression(provider));
 
-    static const QRegularExpression providerType = QRegularExpression(uR"(^([^\ ]*) (.*)$)"_s);
+    static const QRegularExpression providerType = QRegularExpression(QStringLiteral(uR"(^([^\ ]*) (.*)$)"));
     (void) mapStringList.replaceInStrings(providerType, "\\2");
     (void) mapStringList.removeDuplicates();
 
@@ -461,7 +461,7 @@ QStringList QGCMapEngineManager::mapProviderList()
         (void) mapStringList.removeAll(elevationProviderName);
     }
 
-    static const QRegularExpression providerType = QRegularExpression(uR"(^([^\ ]*) (.*)$)"_s);
+    static const QRegularExpression providerType = QRegularExpression(QStringLiteral(uR"(^([^\ ]*) (.*)$)"));
     (void) mapStringList.replaceInStrings(providerType, "\\1");
     (void) mapStringList.removeDuplicates();
 

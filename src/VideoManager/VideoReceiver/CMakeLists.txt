@@ -12,4 +12,3 @@ target_link_libraries(VideoReceiver
 target_include_directories(VideoReceiver PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_subdirectory(GStreamer)
-add_subdirectory(QtMultimedia)

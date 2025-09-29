@@ -16,7 +16,7 @@
 #include <QtCore/QObject>
 #include <QtCore/QString>
 
-
+#include <QFile>
 #include "MAVLinkLib.h"
 
 class QGCLogEntry;

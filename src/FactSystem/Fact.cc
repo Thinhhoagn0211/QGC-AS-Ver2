@@ -12,7 +12,7 @@
 #include "QGCApplication.h"
 #include "QGCCorePlugin.h"
 #include "QGCLoggingCategory.h"
-
+#include <cmath>
 QGC_LOGGING_CATEGORY(FactLog, "qgc.factsystem.fact")
 
 Fact::Fact(QObject *parent)

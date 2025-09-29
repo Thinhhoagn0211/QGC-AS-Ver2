@@ -106,7 +106,9 @@ bool GeoJsonHelper::loadPolygonFromFile(const QString &filePath, QList<QGeoCoord
     for (const QVariant &shapeVar : shapes) {
         if (shapeVar.canConvert<QGeoPolygon>()) {
             const QGeoPolygon poly = shapeVar.value<QGeoPolygon>();
-            vertices = poly.perimeter();
+            vertices = poly.path();
+            // vertices = calcPerimeter(poly);
+            qreal perimeter = GeoJsonHelper::calcPerimeter(poly);
             return true;
         }
     }
@@ -114,6 +116,18 @@ bool GeoJsonHelper::loadPolygonFromFile(const QString &filePath, QList<QGeoCoord
     errorString = QString(_errorPrefix).arg(
         QT_TRANSLATE_NOOP("GeoJson", "No polygon found in GeoJson file."));
     return false;
+}
+
+qreal GeoJsonHelper::calcPerimeter(const QGeoPolygon& poly)
+{
+    qreal length = 0.0;
+    const QList<QGeoCoordinate> coords = poly.path();
+    for (int i = 0; i < coords.size(); ++i) {
+        const QGeoCoordinate &c1 = coords[i];
+        const QGeoCoordinate &c2 = coords[(i + 1) % coords.size()];
+        length += c1.distanceTo(c2); // meters
+    }
+    return length;
 }
 
 bool GeoJsonHelper::loadPolylineFromFile(const QString &filePath, QList<QGeoCoordinate> &coords, QString &errorString)

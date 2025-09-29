@@ -12,7 +12,7 @@
 #include <QtCore/QList>
 #include <QtCore/QLoggingCategory>
 #include <QtPositioning/QGeoCoordinate>
-
+#include <QtPositioning/QGeoPolygon>
 #include "ShapeFileHelper.h"
 
 class QJsonValue;
@@ -38,4 +38,5 @@ namespace GeoJsonHelper
     void saveGeoJsonCoordinate(const QGeoCoordinate &coordinate,    ///< QGeoCoordinate to save
                                bool writeAltitude,                  ///< true: write altitude to json
                                QJsonValue &jsonValue);              ///< json value to save to
+    qreal calcPerimeter(const QGeoPolygon& poly);
 };

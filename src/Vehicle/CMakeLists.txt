@@ -31,6 +31,7 @@ target_link_libraries(Vehicle
 		Qt5::Network
         MAVLink
         LibEvents
+        ADSB
 		qgc
 )
 

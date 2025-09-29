@@ -14,6 +14,7 @@
 #include "AppSettings.h"
 #include "Vehicle.h"
 
+#include <QtCore/QCoreApplication>
 #include <QtCore/QDirIterator>
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>

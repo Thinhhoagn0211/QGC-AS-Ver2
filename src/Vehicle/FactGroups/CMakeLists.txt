@@ -65,6 +65,7 @@ target_link_libraries(FactGroups
 	PUBLIC
 		Qt5::Core
 		Qt5::Network
+        FactSystem
 		qgc
 )
 

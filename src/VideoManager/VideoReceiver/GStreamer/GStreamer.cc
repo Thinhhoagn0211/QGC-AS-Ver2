@@ -17,6 +17,8 @@
 #include <QtCore/QCoreApplication>
 #include <QtCore/QSettings>
 #include <QtQuick/QQuickItem>
+#include <QDir>
+#include <QFileInfo>
 
 #include <gst/gst.h>
 
@@ -121,7 +123,7 @@ void _registerPlugins()
 #endif
 
 // #if !defined(GST_PLUGIN_qml6_FOUND) && defined(QGC_GST_STATIC_BUILD)
-    GST_PLUGIN_STATIC_REGISTER(qml6);
+    // GST_PLUGIN_STATIC_REGISTER(qml6);
 // #endif
 
     GST_PLUGIN_STATIC_REGISTER(qgc);

@@ -36,7 +36,7 @@ void AutoPilotPlugin::_recalcSetupComplete()
     bool newSetupComplete = true;
 
     for (const QVariant &componentVariant : vehicleComponents()) {
-        const VehicleComponent *const component = qobject_cast<const VehicleComponent*>(qvariant_cast<const QObject*>(componentVariant));
+        const VehicleComponent *const component = qobject_cast<VehicleComponent*>(qvariant_cast<QObject*>(componentVariant));
         if (component) {
             if (!component->setupComplete()) {
                 newSetupComplete = false;

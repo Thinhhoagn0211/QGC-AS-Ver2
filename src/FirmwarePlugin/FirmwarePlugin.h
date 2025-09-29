@@ -193,13 +193,13 @@ public:
     virtual double minimumTakeoffAltitudeMeters(Vehicle* /*vehicle*/) const { return 3.048; }
 
     /// @return The maximum horizontal groundspeed for a multirotor.
-    virtual double maximumHorizontalSpeedMultirotor(Vehicle* /*vehicle*/) const { return NAN; }
+    virtual double maximumHorizontalSpeedMultirotor(Vehicle* /*vehicle*/) const { return std::numeric_limits<double>::quiet_NaN(); }
 
     /// @return The maximum equivalent airspeed setpoint.
-    virtual double maximumEquivalentAirspeed(Vehicle* /*vehicle*/) const { return NAN; }
+    virtual double maximumEquivalentAirspeed(Vehicle* /*vehicle*/) const { return std::numeric_limits<double>::quiet_NaN(); }
 
     /// @return The minimum equivalent airspeed setpoint
-    virtual double minimumEquivalentAirspeed(Vehicle* /*vehicle*/) const { return NAN; }
+    virtual double minimumEquivalentAirspeed(Vehicle* /*vehicle*/) const { return std::numeric_limits<double>::quiet_NaN(); }
 
     /// @return Return true if the GCS has enabled Grip_enable option
     virtual bool hasGripper(const Vehicle* /*vehicle*/) const { return false; }

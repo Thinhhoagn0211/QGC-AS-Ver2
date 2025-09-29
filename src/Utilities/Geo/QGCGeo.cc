@@ -15,11 +15,11 @@
 #include <QtCore/QString>
 #include <QtCore/QtMath>
 
-#include <GeographicLib/Constants.hpp>
-#include <GeographicLib/Geocentric.hpp>
-#include <GeographicLib/LocalCartesian.hpp>
-#include <GeographicLib/MGRS.hpp>
-#include <GeographicLib/UTMUPS.hpp>
+#include <Constants.hpp>
+#include <Geocentric.hpp>
+#include <LocalCartesian.hpp>
+#include <MGRS.hpp>
+#include <UTMUPS.hpp>
 
 #include <limits>
 

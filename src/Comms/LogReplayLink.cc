@@ -17,6 +17,7 @@
 #include <QtCore/QtEndian>
 #include <QtCore/QThread>
 #include <QtCore/QTimer>
+#include <QtCore/QDateTime>
 
 QGC_LOGGING_CATEGORY(LogReplayLinkLog, "qgc.comms.logreplaylink")
 
@@ -472,10 +473,20 @@ void LogReplayLink::pause()
 
 void LogReplayLink::setPlaybackSpeed(qreal playbackSpeed)
 {
-    (void) QMetaObject::invokeMethod(_worker, "setPlaybackSpeed", Qt::QueuedConnection, playbackSpeed);
+    (void) QMetaObject::invokeMethod(
+        _worker,
+        "setPlaybackSpeed",
+        Qt::QueuedConnection,
+        Q_ARG(qreal, playbackSpeed)
+    );
 }
 
 void LogReplayLink::movePlayhead(qreal percentComplete)
 {
-    (void) QMetaObject::invokeMethod(_worker, "movePlayhead", Qt::QueuedConnection, percentComplete);
+    (void) QMetaObject::invokeMethod(
+        _worker,
+        "movePlayhead",
+        Qt::QueuedConnection,
+        Q_ARG(qreal, percentComplete)
+    );
 }

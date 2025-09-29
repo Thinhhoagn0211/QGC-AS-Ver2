@@ -185,7 +185,11 @@ void QGCCameraParamIO::_sendParameter()
         case FactMetaData::valueTypeString:
         case FactMetaData::valueTypeCustom: {
             const QByteArray custom = _fact->rawValue().toByteArray();
-            (void) memcpy(union_value.bytes, custom.constData(), static_cast<size_t>(std::max(custom.size(), static_cast<qsizetype>(MAVLINK_MSG_PARAM_EXT_SET_FIELD_PARAM_VALUE_LEN))));
+            const qsizetype copyLen = std::max<qsizetype>(
+                custom.size(),
+                static_cast<qsizetype>(MAVLINK_MSG_PARAM_EXT_SET_FIELD_PARAM_VALUE_LEN)
+            );
+            (void) memcpy(union_value.bytes, custom.constData(), static_cast<size_t>(copyLen));
             break;
         }
         default:

@@ -33,6 +33,7 @@
 #include <QtNetwork/QTcpSocket>
 #include <QtCore/QRegularExpression>
 #include <QtCore/QRegularExpressionMatch>
+#include <QThread>
 
 QGC_LOGGING_CATEGORY(APMFirmwarePluginLog, "APMFirmwarePluginLog")
 
@@ -459,9 +460,8 @@ APMFirmwarePlugin::FirmwareParameterHeader APMFirmwarePlugin::_parseParamsHeader
             break;
         }
 
-        using namespace Qt::StringLiterals;
 
-        static const QRegularExpression reStack(uR"(^#\s*Stack:\s*(.+)\s*$)"_s);
+        static const QRegularExpression reStack(QStringLiteral(uR"(^#\s*Stack:\s*(.+)\s*$)"));
         auto match = reStack.match(line);
         if (match.hasMatch()) {
             const QString firmwareTypeStr = match.captured(1).trimmed();
@@ -470,7 +470,7 @@ APMFirmwarePlugin::FirmwareParameterHeader APMFirmwarePlugin::_parseParamsHeader
             continue;
         }
 
-        static const QRegularExpression reVehicle(uR"(^#\s*Vehicle:\s*(.+)\s*$)"_s);
+        static const QRegularExpression reVehicle(QStringLiteral(uR"(^#\s*Vehicle:\s*(.+)\s*$)"));
         match = reVehicle.match(line);
         if (match.hasMatch()) {
             const QString vehicleTypeStr = match.captured(1).trimmed();
@@ -479,7 +479,7 @@ APMFirmwarePlugin::FirmwareParameterHeader APMFirmwarePlugin::_parseParamsHeader
             continue;
         }
 
-        static const QRegularExpression reVersion(uR"(^#\s*Version:\s*([0-9]+(?:\.[0-9]+){0,2})(?:\s+([A-Za-z0-9]+))?\s*$)"_s);
+        static const QRegularExpression reVersion(QStringLiteral(uR"(^#\s*Version:\s*([0-9]+(?:\.[0-9]+){0,2})(?:\s+([A-Za-z0-9]+))?\s*$)"));
         match = reVersion.match(line);
         if (match.hasMatch()) {
             const QString versionNumber = match.captured(1).trimmed();
@@ -494,7 +494,7 @@ APMFirmwarePlugin::FirmwareParameterHeader APMFirmwarePlugin::_parseParamsHeader
             continue;
         }
 
-        static const QRegularExpression reGit(uR"(^#\s*Git Revision:\s*([0-9a-fA-F]+)\s*$)"_s);
+        static const QRegularExpression reGit(QStringLiteral(uR"(^#\s*Git Revision:\s*([0-9a-fA-F]+)\s*$)"));
         match = reGit.match(line);
         if (match.hasMatch()) {
             data.gitRevision = match.captured(1).trimmed();
@@ -847,7 +847,7 @@ void APMFirmwarePlugin::guidedModeGotoLocation(Vehicle *vehicle, const QGeoCoord
             // home, etc.).
             // For planes it indicates loiter direction (0: clockwise, 1:
             // counter clockwise)
-            float yawParam = NAN;
+            float yawParam = std::numeric_limits<double>::quiet_NaN();
             if (forwardFlightLoiterRadius > 0) {
                 yawParam = 0.0f;
             } else if (forwardFlightLoiterRadius < 0) {
@@ -958,7 +958,7 @@ void APMFirmwarePlugin::guidedModeChangeGroundSpeedMetersSecond(Vehicle *vehicle
         static_cast<float>(groundspeed),    // groundspeed setpoint
         -1,                                 // throttle
         0,                                  // 0: absolute speed, 1: relative to current
-        NAN, NAN, NAN                       // param 5-7 unused
+        std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN()                       // param 5-7 unused
     );
 }
 

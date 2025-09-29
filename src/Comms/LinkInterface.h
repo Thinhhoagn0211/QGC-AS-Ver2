@@ -56,7 +56,8 @@ signals:
 
 protected:
     /// Links are only created by LinkManager so constructor is not public
-    explicit LinkInterface(SharedLinkConfigurationPtr &config, QObject *parent = nullptr);
+    // explicit LinkInterface(SharedLinkConfigurationPtr &config, QObject *parent = nullptr);
+    explicit LinkInterface(const SharedLinkConfigurationPtr &config, QObject *parent = nullptr);
 
     /// Called by the LinkManager during LinkInterface construction instructing the link to setup channels.
     /// Default implementation allocates a single channel. But some link types (such as MockLink) need more than one.

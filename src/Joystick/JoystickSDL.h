@@ -12,26 +12,33 @@
 #include <QtCore/QLoggingCategory>
 #include "MultiVehicleManager.h"
 #include "Joystick.h"
+#include <SDL.h> 
 
-struct SDL_Joystick;
-typedef struct SDL_Joystick SDL_Joystick;
+// struct SDL_Joystick;
+// typedef struct SDL_Joystick SDL_Joystick;
 
-struct SDL_Gamepad;
-typedef struct SDL_Gamepad SDL_Gamepad;
+// struct _SDL_GameController;
+// typedef struct _SDL_GameController SDL_GameController;
 
 Q_DECLARE_LOGGING_CATEGORY(JoystickSDLLog)
 
 class JoystickSDL : public Joystick
 {
 public:
-    explicit JoystickSDL(const QString &name, QList<int> gamepadAxes, QList<int> nonGamepadAxes, int buttonCount, int hatCount, int instanceId, bool isGamepad, QObject *parent = nullptr);
+    explicit JoystickSDL(const QString& name,
+                         int axisCount,
+                         int buttonCount,
+                         int hatCount,
+                         int index,
+                         bool isGameController,
+                         MultiVehicleManager* multiVehicleManager);
     ~JoystickSDL() override;
 
     int instanceId() const { return _instanceId; }
     void setInstanceId(int instanceId) { _instanceId = instanceId; }
 
     // bool requiresCalibration() const final { return !_isGamepad; }
-
+    
     static bool init();
     static QMap<QString, Joystick*> discover(MultiVehicleManager* _multiVehicleManager); 
 

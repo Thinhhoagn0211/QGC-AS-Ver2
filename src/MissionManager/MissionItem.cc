@@ -397,7 +397,7 @@ void MissionItem::setParam7(double param)
 QGeoCoordinate MissionItem::coordinate(void) const
 {
     if(!std::isfinite(param5()) || !std::isfinite(param6())) {
-        //-- If either of these are NAN, return an invalid (QGeoCoordinate::isValid() == false) coordinate
+        //-- If either of these are std::numeric_limits<double>::quiet_NaN(), return an invalid (QGeoCoordinate::isValid() == false) coordinate
         return QGeoCoordinate();
     }
     return QGeoCoordinate(param5(), param6(), param7());

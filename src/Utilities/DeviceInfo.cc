@@ -11,7 +11,8 @@
 #include "QGCLoggingCategory.h"
 
 
-#include <QtNetwork/QNetworkInformation>
+#include <QNetworkConfigurationManager>
+#include <QNetworkConfiguration>
 #ifdef QGC_ENABLE_BLUETOOTH
 #    include <QtBluetooth/QBluetoothLocalDevice>
 #endif
@@ -27,24 +28,20 @@ namespace QGCDeviceInfo
 
 bool isInternetAvailable()
 {
-    if (QNetworkInformation::availableBackends().isEmpty()) return false;
-
-    if (!QNetworkInformation::loadDefaultBackend()) return false;
-
-    if (!QNetworkInformation::loadBackendByFeatures(QNetworkInformation::Feature::Reachability)) return false;
-
-    const QNetworkInformation::Reachability reachability = QNetworkInformation::instance()->reachability();
-
-    return (reachability == QNetworkInformation::Reachability::Online);
+    QNetworkConfigurationManager mgr;
+    return mgr.isOnline();
 }
 
 bool isNetworkEthernet()
 {
-    if (QNetworkInformation::availableBackends().isEmpty()) return false;
-
-    if (!QNetworkInformation::loadDefaultBackend()) return false;
-
-    return (QNetworkInformation::instance()->transportMedium() == QNetworkInformation::TransportMedium::Ethernet);
+    QNetworkConfigurationManager mgr;
+    const QList<QNetworkConfiguration> activeConfigs = mgr.allConfigurations(QNetworkConfiguration::Active);
+    for (const QNetworkConfiguration &cfg : activeConfigs) {
+        if (cfg.bearerType() == QNetworkConfiguration::BearerEthernet) {
+            return true;
+        }
+    }
+    return false;
 }
 
 bool isBluetoothAvailable()
@@ -372,7 +369,7 @@ bool QGCCompass::init()
 
         QGeoPositionInfo update;
         update.setAttribute(QGeoPositionInfo::Attribute::Direction, _azimuth);
-        update.setAttribute(QGeoPositionInfo::Attribute::DirectionAccuracy, _calibrationLevel);
+        // update.setAttribute(QGeoPositionInfo::Attribute::DirectionAccuracy, _calibrationLevel);
         update.setTimestamp(QDateTime::currentDateTimeUtc());
         emit positionUpdated(update);
     });

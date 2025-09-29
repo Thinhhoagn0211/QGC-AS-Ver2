@@ -304,7 +304,7 @@ void SerialWorker::writeData(const QByteArray &data)
         totalBytesWritten += bytesWritten;
     }
 
-    const QByteArray sent = data.first(totalBytesWritten);
+    const QByteArray sent = data.left(totalBytesWritten);
     emit dataSent(sent);
 }
 

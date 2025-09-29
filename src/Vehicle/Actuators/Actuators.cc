@@ -564,7 +564,7 @@ bool Actuators::parseJson(const QJsonDocument &json)
         actuatorType.values.max = values["max"].toDouble();
         actuatorType.values.defaultVal = values["default"].toDouble();
         if (values["default-is-nan"].toBool()) {
-            actuatorType.values.defaultVal = NAN;
+            actuatorType.values.defaultVal = std::numeric_limits<double>::quiet_NaN();
         }
         actuatorType.values.reversible = values["reversible"].toBool();
 

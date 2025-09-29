@@ -16,6 +16,8 @@
 #include <QtCharts/QLineSeries>
 #include <QtCharts/QAbstractSeries>
 
+QT_CHARTS_USE_NAMESPACE
+
 QGC_LOGGING_CATEGORY(MAVLinkMessageFieldLog, "qgc.analyzeview.mavlinkmessagefield")
 
 QGCMAVLinkMessageField::QGCMAVLinkMessageField(const QString &name, const QString &type, QGCMAVLinkMessage *parent)
@@ -34,7 +36,7 @@ QGCMAVLinkMessageField::~QGCMAVLinkMessageField()
     // qCDebug(MAVLinkMessageFieldLog) << Q_FUNC_INFO << this;
 }
 
-void QGCMAVLinkMessageField::addSeries(MAVLinkChartController *chartController, QAbstractSeries *series)
+void QGCMAVLinkMessageField::addSeries(MAVLinkChartController *chartController, QtCharts::QAbstractSeries *series)
 {
     if (_pSeries) {
         return;

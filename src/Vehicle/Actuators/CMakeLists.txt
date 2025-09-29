@@ -21,6 +21,7 @@ target_link_libraries(Actuators
 	PUBLIC
 		Qt5::Core
 		Qt5::Network
+        Qt5::Gui
 		qgc
 )
 

@@ -13,9 +13,9 @@
 #include <QtCore/QByteArray>
 #include <QtCore/QString>
 
-#include <ulog_cpp/data_container.hpp>
-#include <ulog_cpp/reader.hpp>
-
+#include <data_container.hpp>
+#include <reader.hpp>
+#include <cmath>
 using namespace ulog_cpp;
 
 QGC_LOGGING_CATEGORY(ULogParserLog, "qgc.analyzeview.ulogparser")
@@ -32,8 +32,8 @@ bool getTagsFromLog(const QByteArray &log, QList<GeoTagWorker::CameraFeedbackPac
 
     if (!data->parsingErrors().empty()) {
         for (const std::string &parsing_error : data->parsingErrors()) {
-            (void) errorMessage.append(parsing_error);
-            (void) errorMessage.append(", ");
+            errorMessage.append(QString::fromStdString(parsing_error));
+            errorMessage.append(", ");
         }
     }
 

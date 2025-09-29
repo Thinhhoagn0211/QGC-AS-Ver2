@@ -133,8 +133,8 @@ private:
     #define FRAME_TYPE_OMNIPLUS     3
 
     struct FrameToImageInfo {
-        const int frameClass;
-        const int frameType;
+        int frameClass;
+        int frameType;
         const char *imageResource;
     };
     static constexpr const FrameToImageInfo _rgFrameToImageCopter[] = {

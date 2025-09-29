@@ -16,7 +16,7 @@
 #include <QtCore/QLoggingCategory>
 #include <QtCore/QMutex>
 #include <QtNetwork/QAbstractSocket>
-
+#include <QVersionNumber>
 Q_DECLARE_LOGGING_CATEGORY(APMFirmwarePluginLog)
 
 struct APMCustomMode

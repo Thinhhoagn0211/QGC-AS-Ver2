@@ -80,9 +80,9 @@ private:
 
 	// We have seen buffers with 540 bytes for AGRICA.
 	char _buffer[600];
-	unsigned _buffer_pos {};
+	unsigned _buffer_pos {0};
 	char _buffer_crc[9];
-	unsigned _buffer_crc_pos {};
+	unsigned _buffer_crc_pos {0};
 
 	enum class State {
 		Uninit,

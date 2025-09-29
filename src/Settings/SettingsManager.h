@@ -11,7 +11,8 @@
 
 #include <QtCore/QLoggingCategory>
 #include <QtCore/QObject>
-
+#include "VideoSettings.h"
+#include "UnitsSettings.h"
 
 class ADSBVehicleManagerSettings;
 class APMMavlinkStreamRateSettings;

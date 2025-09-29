@@ -25,10 +25,10 @@
 #else
 #include "VideoItemStub.h"
 #endif
-#include "QtMultimediaReceiver.h"
-#include "UVCReceiver.h"
+// #include "QtMultimediaReceiver.h"
+// #include "UVCReceiver.h"
 
-
+#include <QtCore/qmath.h>
 #include <QtCore/QDir>
 #include <QtQml/QQmlEngine>
 #include <QtQuick/QQuickItem>
@@ -283,7 +283,7 @@ bool VideoManager::hasVideo() const
 
 bool VideoManager::isUvc() const
 {
-    return (!_uvcVideoSourceID.isEmpty() && uvcEnabled() && hasVideo());
+    return (!_uvcVideoSourceID.isEmpty() && hasVideo());
 }
 
 bool VideoManager::gstreamerEnabled()
@@ -295,15 +295,15 @@ bool VideoManager::gstreamerEnabled()
 #endif
 }
 
-bool VideoManager::uvcEnabled()
-{
-    return UVCReceiver::enabled();
-}
+// bool VideoManager::uvcEnabled()
+// {
+//     return UVCReceiver::enabled();
+// }
 
-bool VideoManager::qtmultimediaEnabled()
-{
-    return QtMultimediaReceiver::enabled();
-}
+// bool VideoManager::qtmultimediaEnabled()
+// {
+//     return QtMultimediaReceiver::enabled();
+// }
 
 void VideoManager::setfullScreen(bool on)
 {
@@ -381,17 +381,18 @@ bool VideoManager::_updateUVC(VideoReceiver *receiver)
 
     const QString oldUvcVideoSrcID = _uvcVideoSourceID;
 
-    if (!uvcEnabled() || !hasVideo() || isStreamSource()) {
+    if (!hasVideo() || isStreamSource()) {
         _uvcVideoSourceID = QString();
-    } else {
-        _uvcVideoSourceID = UVCReceiver::getSourceId();
     }
+    // } else {
+    //     _uvcVideoSourceID = UVCReceiver::getSourceId();
+    // }
 
     if (oldUvcVideoSrcID != _uvcVideoSourceID) {
         qCDebug(VideoManagerLog) << "UVC changed from [" << oldUvcVideoSrcID << "] to [" << _uvcVideoSourceID << "]";
-        if (!_uvcVideoSourceID.isEmpty()) {
-            UVCReceiver::checkPermission();
-        }
+        // if (!_uvcVideoSourceID.isEmpty()) {
+        //     UVCReceiver::checkPermission();
+        // }
         result = true;
         emit uvcVideoSourceIDChanged();
         emit isUvcChanged();

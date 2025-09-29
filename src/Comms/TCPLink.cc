@@ -210,7 +210,7 @@ void TCPWorker::writeData(const QByteArray &data)
         totalBytesWritten += bytesWritten;
     }
 
-    emit dataSent(data.first(totalBytesWritten));
+    emit dataSent(data.left(totalBytesWritten));
 }
 
 void TCPWorker::_onSocketConnected()

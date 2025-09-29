@@ -11,8 +11,7 @@
 
 #include <QtCore/QSettings>
 #include <QtCore/QString>
-
-
+#include <memory>
 class LinkInterface;
 
 /// Interface holding link specific settings.
@@ -78,6 +77,7 @@ public:
 #endif
         TypeUdp,        ///< UDP Link
         TypeTcp,        ///< TCP Link
+        TypeBluetooth,
 #ifdef QGC_ENABLE_BLUETOOTH
         TypeBluetooth,  ///< Bluetooth Link
 #endif

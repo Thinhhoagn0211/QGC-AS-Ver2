@@ -74,50 +74,42 @@ void AudioOutput::init(Fact *mutedFact)
         return;
     }
 
-    // Autoselect engine by priority
-    if (!_engine->setEngine(QString())) {
-        qCWarning(AudioOutputLog) << "Failed to set the TTS engine.";
-        return;
+    // Không có engineChanged trong Qt5 → bỏ hoặc setLocale trực tiếp
+    const QLocale defaultLocale = QLocale("en_US");
+    if (_engine->availableLocales().contains(defaultLocale)) {
+        _engine->setLocale(defaultLocale);
     }
 
-    (void) connect(_engine, &QTextToSpeech::engineChanged, this, [this](const QString &engine) {
-        qCDebug(AudioOutputLog) << "TTS Engine set to:" << engine;
-        const QLocale defaultLocale = QLocale("en_US");
-        if (_engine->availableLocales().contains(defaultLocale)) {
-            _engine->setLocale(defaultLocale);
+    // Không có aboutToSynthesize trong Qt5 → thay bằng stateChanged
+    connect(_engine, &QTextToSpeech::stateChanged, this, [this](QTextToSpeech::State state) {
+        if (state == QTextToSpeech::Speaking) {
+            _textQueueSize--;
+            qCDebug(AudioOutputLog) << "Queue Size:" << _textQueueSize;
         }
     });
 
-    (void) connect(_engine, &QTextToSpeech::aboutToSynthesize, this, [this](qsizetype id) {
-        qCDebug(AudioOutputLog) << "TTS About To Synthesize ID:" << id;
-        _textQueueSize--;
-        qCDebug(AudioOutputLog) << "Queue Size:" << _textQueueSize;
-    });
-
-    (void) connect(mutedFact, &Fact::valueChanged, this, [this](QVariant value) {
+    // Giữ nguyên mutedFact vì đây là code QGC
+    connect(mutedFact, &Fact::valueChanged, this, [this](QVariant value) {
         setMuted(value.toBool());
     });
 
+    // Debug logging (chỉ những signal Qt5 có)
     if (AudioOutputLog().isDebugEnabled()) {
-        (void) connect(_engine, &QTextToSpeech::stateChanged, this, [this](QTextToSpeech::State state) {
+        connect(_engine, &QTextToSpeech::stateChanged, this, [this](QTextToSpeech::State state) {
             qCDebug(AudioOutputLog) << "TTS State changed to:" << state;
         });
-        (void) connect(_engine, &QTextToSpeech::errorOccurred, this, [](QTextToSpeech::ErrorReason reason, const QString &errorString) {
-            qCDebug(AudioOutputLog) << "TTS Error occurred. Reason:" << reason << ", Message:" << errorString;
+        connect(_engine, &QTextToSpeech::localeChanged, this, [](const QLocale &locale) {
+            qCDebug(AudioOutputLog) << "TTS Locale changed to:" << locale;
         });
-        (void) connect(_engine, &QTextToSpeech::localeChanged, this, [](const QLocale &locale) {
-            qCDebug(AudioOutputLog) << "TTS Locale change to:" << locale;
-        });
-        (void) connect(_engine, &QTextToSpeech::volumeChanged, this, [](double volume) {
-            qCDebug(AudioOutputLog) << "TTS Volume changed to:" << volume;
-        });
-        (void) connect(_engine, &QTextToSpeech::sayingWord, this, [](const QString &word, qsizetype id, qsizetype start, qsizetype length) {
-            qCDebug(AudioOutputLog) << "TTS Saying:" << word << "ID:" << id << "Start:" << start << "Length:" << length;
+        connect(_engine, &QTextToSpeech::voiceChanged, this, [](const QVoice &voice) {
+            qCDebug(AudioOutputLog) << "TTS Voice changed to:" << voice.name();
         });
     }
 
+    // Set muted state ban đầu
     setMuted(mutedFact->rawValue().toBool());
     _initialized = true;
+
 
     qCDebug(AudioOutputLog) << "AudioOutput initialized with muted state:" << _muted;
 }
@@ -125,7 +117,7 @@ void AudioOutput::init(Fact *mutedFact)
 void AudioOutput::setMuted(bool muted)
 {
     if (_muted.exchange(muted) != muted) {
-        (void) QMetaObject::invokeMethod(_engine, "setVolume", Qt::AutoConnection, muted ? 0.0 : 1.0);
+        _engine->setVolume(muted ? 0.0 : 1.0);
         qCDebug(AudioOutputLog) << "AudioOutput muted state set to:" << muted;
     }
 }
@@ -143,31 +135,22 @@ void AudioOutput::say(const QString &text, TextMods textMods)
         return;
     }
 
-    if (!_engine->engineCapabilities().testFlag(QTextToSpeech::Capability::Speak)) {
-        qCWarning(AudioOutputLog) << "Speech Not Supported:" << text;
-        return;
-    }
-
-    if (_textQueueSize >= kMaxTextQueueSize) {
-        (void) QMetaObject::invokeMethod(_engine, "stop", Qt::AutoConnection, QTextToSpeech::BoundaryHint::Default);
-        _textQueueSize = 0;
-        qCWarning(AudioOutputLog) << "Text queue exceeded maximum size. Stopped current speech.";
-    }
-
     QString outText = _fixTextMessageForAudio(text);
 
     if (textMods.testFlag(TextMod::Translate)) {
         outText = tr("%1").arg(outText);
     }
 
-    qsizetype index;
-    if (QMetaObject::invokeMethod(_engine, "enqueue", Qt::AutoConnection, qReturnArg(index), outText)) {
-        if (index != -1) {
-            _textQueueSize++;
-            qCDebug(AudioOutputLog) << "Enqueued text with index:" << index << ", Queue Size:" << _textQueueSize;
+    if (_engine->state() == QTextToSpeech::Speaking) {
+        // Nếu đang nói, push vào hàng đợi tự quản lý
+        if (!_texts.contains(outText)) {
+            if (_texts.size() > kMaxTextQueueSize) {
+                _texts.removeFirst();
+            }
+            _texts.append(outText);
         }
     } else {
-        qCWarning(AudioOutputLog) << "Failed to invoke Enqueue method.";
+        _engine->say(outText);
     }
 }
 

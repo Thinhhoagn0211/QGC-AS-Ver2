@@ -11,7 +11,7 @@
 #include "MockLink.h"
 #include "QGCLoggingCategory.h"
 #include "QGCTemporaryFile.h"
-
+#include <QtCore/QtMath>
 QGC_LOGGING_CATEGORY(MockLinkFTPLog, "MockLinkMissionItemHandlerLog")
 
 MockLinkFTP::MockLinkFTP(uint8_t systemIdServer, uint8_t componentIdServer, MockLink *mockLink)

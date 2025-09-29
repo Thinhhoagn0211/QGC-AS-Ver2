@@ -1,22 +1,6 @@
 add_subdirectory(AirLink)
-
+add_subdirectory(MockLink)
 add_library(Comms
-	AirLink/AirLinkLink.cc
-	AirLink/AirLinkLink.h
-	AirLink/AirLinkManager.cc
-	AirLink/AirLinkManager.h
-
-
-	MockLink/MockConfiguration.cc
-	MockLink/MockConfiguration.h
-	MockLink/MockLink.cc
-	MockLink/MockLink.h
-	MockLink/MockLinkFTP.cc
-	MockLink/MockLinkFTP.h
-	MockLink/MockLinkMissionItemHandler.cc
-	MockLink/MockLinkMissionItemHandler.h
-	MockLink/MockLinkWorker.cc
-	MockLink/MockLinkWorker.h
 
 	BluetoothLink.cc
 	BluetoothLink.h
@@ -55,6 +39,7 @@ target_link_libraries(Comms
 		Qt5::Test
 		Qt5::TextToSpeech
 		Qt5::Widgets
+		Qt5::Bluetooth
 		qmdnsengine
 )
 

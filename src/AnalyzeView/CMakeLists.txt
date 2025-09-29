@@ -26,6 +26,21 @@ add_library(AnalyzeView
 	ULogParser.cc
 	ULogParser.h
 
+	data_container.cpp
+	data_container.hpp
+	data_handler_interface.hpp
+	exception.hpp
+	messages.cpp
+	messages.hpp
+	raw_messages.hpp
+	reader.cpp
+	reader.hpp
+	simple_writer.cpp
+	simple_writer.hpp
+	subscription.hpp
+	utils.hpp
+	writer.cpp
+	writer.hpp
 	${EXTRA_SRC}
 )
 

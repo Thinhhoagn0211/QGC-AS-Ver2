@@ -91,6 +91,7 @@ set(GST_DEPENDENCIES
 	gstreamer-1.0>=1.14
 	gstreamer-video-1.0>=1.14
 	gstreamer-gl-1.0>=1.14
+	gstreamer-rtsp-1.0>=1.14
 	)
 
 if (MSVC)

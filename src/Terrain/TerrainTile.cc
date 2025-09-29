@@ -12,6 +12,9 @@
 
 #include <QtCore/QtNumeric>
 #include <QtPositioning/QGeoCoordinate>
+#include <QList>
+#include <cstdint>
+#include <QtCore/qmath.h>
 
 QGC_LOGGING_CATEGORY(TerrainTileLog, "qgc.terrain.terraintile");
 

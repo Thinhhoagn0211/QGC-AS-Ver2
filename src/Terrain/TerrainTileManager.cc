@@ -22,7 +22,7 @@
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkProxy>
 #include <QtNetwork/QNetworkRequest>
-
+#include <QtCore/QtMath>
 QGC_LOGGING_CATEGORY(TerrainTileManagerLog, "qgc.terrain.terraintilemanager")
 
 Q_GLOBAL_STATIC(TerrainTileManager, _terrainTileManager)

@@ -11,7 +11,7 @@
 
 #include <QtCore/QLoggingCategory>
 #include <QtCore/QObject>
-
+#include <QSaveFile>
 
 Q_DECLARE_LOGGING_CATEGORY(LogDownloadControllerLog)
 

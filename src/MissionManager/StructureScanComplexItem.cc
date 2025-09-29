@@ -17,7 +17,7 @@
 #include "FlightPathSegment.h"
 #include "QGC.h"
 #include "QGCLoggingCategory.h"
-
+#include <QMetaMethod>
 #include <QtCore/QJsonArray>
 
 QGC_LOGGING_CATEGORY(StructureScanComplexItemLog, "StructureScanComplexItemLog")

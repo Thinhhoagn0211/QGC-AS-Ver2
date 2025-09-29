@@ -13,7 +13,7 @@
 #include "ActuatorTesting.h"
 #include "Mixer.h"
 #include "MotorAssignment.h"
-
+#include <QSizeF>
 #include <QtCore/QObject>
 #include <QtCore/QString>
 #include <QtCore/QJsonDocument>

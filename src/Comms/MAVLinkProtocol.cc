@@ -24,7 +24,9 @@
 #include <QtCore/QMetaType>
 #include <QtCore/QSettings>
 #include <QtCore/QStandardPaths>
-
+#include <QtCore/QtMath>
+#include <QtCore/QSaveFile>
+#include <QtCore/QtEndian>
 QGC_LOGGING_CATEGORY(MAVLinkProtocolLog, "qgc.comms.mavlinkprotocol")
 
 Q_GLOBAL_STATIC(MAVLinkProtocol, _mavlinkProtocolInstance);

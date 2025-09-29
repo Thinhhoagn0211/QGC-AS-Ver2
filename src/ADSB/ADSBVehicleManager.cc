@@ -18,12 +18,13 @@
 
 
 #include <QtCore/QTimer>
-#include <qassert.h>
+#include <QtCore/qglobal.h>
 
 QGC_LOGGING_CATEGORY(ADSBVehicleManagerLog, "qgc.adsb.adsbvehiclemanager")
 
 // Q_APPLICATION_STATIC(ADSBVehicleManager, _adsbVehicleManager, SettingsManager::instance()->adsbVehicleManagerSettings());
-Q_GLOBAL_STATIC(ADSBVehicleManager, _adsbVehicleManager);
+Q_GLOBAL_STATIC_WITH_ARGS(ADSBVehicleManager, _adsbVehicleManager,
+                          (SettingsManager::instance()->adsbVehicleManagerSettings()))
 
 ADSBVehicleManager::ADSBVehicleManager(ADSBVehicleManagerSettings *settings, QObject *parent)
     : QObject(parent)
@@ -86,7 +87,7 @@ void ADSBVehicleManager::_handleADSBVehicle(const mavlink_message_t &message)
 
     ADSB::VehicleInfo_t vehicleInfo{};
 
-    vehicleInfo.availableFlags = ADSB::AvailableInfoTypes::fromInt(0);
+    vehicleInfo.availableFlags = {};
 
     vehicleInfo.icaoAddress = adsbVehicleMsg.ICAO_address;
     vehicleInfo.lastContact = adsbVehicleMsg.tslc;

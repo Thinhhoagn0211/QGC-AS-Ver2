@@ -84,6 +84,7 @@ pkg_check_modules(GST
     gstreamer-1.0>=1.14
     gstreamer-video-1.0>=1.14
     gstreamer-gl-1.0>=1.14
+    gstrtsp-1.0>=1.14
     egl
     )
 
@@ -150,4 +151,5 @@ target_link_libraries(VideoReceiverApp
         Qt5::OpenGL
         Qt5::Quick
         Qt5::QuickWidgets
+        ${GST_LIBRARIES} 
 )

@@ -38,9 +38,16 @@ QDomDocument KMLHelper::_loadFile(const QString &kmlFile, QString &errorString)
     }
 
     QDomDocument doc;
-    const QDomDocument::ParseResult result = doc.setContent(&file, QDomDocument::ParseOption::Default);
-    if (!result) {
-        errorString = QString(_errorPrefix).arg(QString(QT_TRANSLATE_NOOP("KML", "Unable to parse KML file: %1 error: %2 line: %3")).arg(kmlFile).arg(result.errorMessage).arg(result.errorLine));
+    QString errorMsg;
+    int errorLine, errorColumn;
+
+    if (!doc.setContent(&file, &errorMsg, &errorLine, &errorColumn)) {
+        errorString = QString(_errorPrefix)
+            .arg(QString(QT_TRANSLATE_NOOP("KML",
+                "Unable to parse KML file: %1 error: %2 line: %3"))
+                .arg(kmlFile)
+                .arg(errorMsg)
+                .arg(errorLine));
         return QDomDocument();
     }
 

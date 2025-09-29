@@ -16,7 +16,6 @@
 
 QGC_LOGGING_CATEGORY(APMFirmwarePluginFactoryLog, "qgc.firmwareplugin.apmfirmwarepluginfactory");
 
-APMFirmwarePluginFactory APMFirmwarePluginFactory(nullptr);
 
 APMFirmwarePluginFactory::APMFirmwarePluginFactory(QObject *parent)
 {

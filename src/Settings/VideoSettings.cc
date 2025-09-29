@@ -15,9 +15,9 @@
 #ifdef QGC_GST_STREAMING
 #include "GStreamer.h"
 #endif
-#ifndef QGC_DISABLE_UVC
-#include "UVCReceiver.h"
-#endif
+// #ifndef QGC_DISABLE_UVC
+// #include "UVCReceiver.h"
+// #endif
 
 DECLARE_SETTINGGROUP(Video, "Video")
 {
@@ -39,9 +39,9 @@ DECLARE_SETTINGGROUP(Video, "Video")
         videoSourceList.append(videoSourceHerelinkHotspot);
     #endif
 #endif
-#ifndef QGC_DISABLE_UVC
-    videoSourceList.append(UVCReceiver::getDeviceNameList());
-#endif
+// #ifndef QGC_DISABLE_UVC
+    // videoSourceList.append(UVCReceiver::getDeviceNameList());
+// #endif
     if (videoSourceList.count() == 0) {
         _noVideo = true;
         videoSourceList.append(videoSourceNoVideo);
@@ -223,12 +223,12 @@ bool VideoSettings::streamConfigured(void)
         qCDebug(VideoManagerLog) << "Stream configured for Herelink Hotspot";
         return true;
     }
-#ifndef QGC_DISABLE_UVC
-    if (UVCReceiver::enabled() && UVCReceiver::deviceExists(vSource)) {
-        qCDebug(VideoManagerLog) << "Stream configured for UVC";
-        return true;
-    }
-#endif
+// #ifndef QGC_DISABLE_UVC
+//     if (UVCReceiver::enabled() && UVCReceiver::deviceExists(vSource)) {
+//         qCDebug(VideoManagerLog) << "Stream configured for UVC";
+//         return true;
+//     }
+// #endif
     return false;
 }
 

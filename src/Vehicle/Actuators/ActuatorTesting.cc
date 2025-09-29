@@ -176,7 +176,7 @@ void ActuatorTest::sendNext()
             break;
         } else if (_states[_currentState].state == ActuatorState::State::StopRequest) {
             _states[_currentState].state = ActuatorState::State::Stopping;
-            sendMavlinkRequest(actuator->function(), NAN, 0.f);
+            sendMavlinkRequest(actuator->function(), std::numeric_limits<double>::quiet_NaN(), 0.f);
             break;
         }
     }

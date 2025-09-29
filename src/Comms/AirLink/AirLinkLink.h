@@ -67,7 +67,7 @@ class AirLinkLink : public UDPLink
     Q_OBJECT
 
 public:
-    explicit AirLinkLink(SharedLinkConfigurationPtr &config, QObject *parent = nullptr);
+    explicit AirLinkLink(SharedLinkConfigurationPtr config, QObject *parent = nullptr);
     ~AirLinkLink();
 
     void disconnect() final;

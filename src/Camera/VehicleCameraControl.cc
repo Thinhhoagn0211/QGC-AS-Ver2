@@ -793,10 +793,12 @@ VehicleCameraControl::_loadCameraDefinitionFile(QByteArray& bytes)
     }
 
     QDomDocument doc;
-    const QDomDocument::ParseResult result = doc.setContent(bytes, QDomDocument::ParseOption::Default);
-    if (!result) {
-        qCCritical(CameraControlLog) << "Unable to parse camera definition file on line:" << result.errorLine;
-        qCCritical(CameraControlLog) << result.errorMessage;
+    QString errorMsg;
+    int errorLine, errorColumn;
+    if (!doc.setContent(bytes, &errorMsg, &errorLine, &errorColumn)) {
+        qCCritical(CameraControlLog) << "Unable to parse camera definition file on line:" << errorLine
+                                    << " column:" << errorColumn;
+        qCCritical(CameraControlLog) << errorMsg;
         return false;
     }
     //-- Load camera constants
@@ -1071,11 +1073,14 @@ VehicleCameraControl::_loadSettings(const QDomNodeList nodeList)
 bool
 VehicleCameraControl::_handleLocalization(QByteArray& bytes)
 {
+
     QDomDocument doc;
-    const QDomDocument::ParseResult result = doc.setContent(bytes, QDomDocument::ParseOption::Default);
-    if (!result) {
-        qCritical() << "Unable to parse camera definition file on line:" << result.errorLine;
-        qCritical() << result.errorMessage;
+    QString errorMsg;
+    int errorLine, errorColumn;
+    if (!doc.setContent(bytes, &errorMsg, &errorLine, &errorColumn)) {
+        qCCritical(CameraControlLog) << "Unable to parse camera definition file on line:" << errorLine
+                                    << " column:" << errorColumn;
+        qCCritical(CameraControlLog) << errorMsg;
         return false;
     }
     //-- Find out where we are
@@ -1662,9 +1667,9 @@ VehicleCameraControl::handleTrackingImageStatus(const mavlink_camera_tracking_im
                 if (qIsNaN(r) || r <= 0 ) {
                     r = 0.05f;
                 }
-                // Bottom is NAN so that we can draw perfect square using video aspect ratio
+                // Bottom is std::numeric_limits<double>::quiet_NaN() so that we can draw perfect square using video aspect ratio
                 _trackingImageRect = QRectF(QPointF(_trackingImageStatus.point_x - r, _trackingImageStatus.point_y - r),
-                                            QPointF(_trackingImageStatus.point_x + r, NAN));
+                                            QPointF(_trackingImageStatus.point_x + r, std::numeric_limits<double>::quiet_NaN()));
             }
             // get rectangle into [0..1] boundaries
             _trackingImageRect.setLeft(std::min(std::max(_trackingImageRect.left(), 0.0), 1.0));
@@ -2124,9 +2129,12 @@ VehicleCameraControl::_handleDefinitionFile(const QString &url)
     }
     QByteArray bytes = xmlFile.readAll();
     QDomDocument doc;
-    const QDomDocument::ParseResult result = doc.setContent(bytes, QDomDocument::ParseOption::Default);
-    if (!result) {
+    QString errorMsg;
+    int errorLine = 0;
+    int errorColumn = 0;
+    if (!doc.setContent(bytes, &errorMsg, &errorLine, &errorColumn)) {
         qWarning() << "Could not parse cached camera definition file:" << _cacheFile;
+        qWarning() << "Parse error at line" << errorLine << "column" << errorColumn << ":" << errorMsg;
         _httpRequest(url);
         return;
     }

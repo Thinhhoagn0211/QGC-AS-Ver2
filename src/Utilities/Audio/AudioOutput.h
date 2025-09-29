@@ -66,7 +66,7 @@ private:
     QAtomicInteger<qsizetype> _textQueueSize = 0;
     bool _initialized = false;
     std::atomic_bool _muted = false;
-
+    QStringList _texts;
     static const QHash<QString, QString> _textHash;
 
     static constexpr qsizetype kMaxTextQueueSize = 20;

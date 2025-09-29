@@ -2,37 +2,63 @@
 add_subdirectory(APM)
 add_subdirectory(Common)
 add_subdirectory(PX4)
+add_subdirectory(Generic)
+
 
 add_library(AutoPilotPlugins
 	APM/APMAirframeComponent.cc
+	APM/APMAirframeComponent.h
 	APM/APMAirframeComponentController.cc
+	APM/APMAirframeComponentController.h
 	APM/APMAutoPilotPlugin.cc
+	APM/APMAutoPilotPlugin.h
 	APM/APMCameraComponent.cc
+	APM/APMCameraComponent.h
 	APM/APMFlightModesComponent.cc
+	APM/APMFlightModesComponent.h
 	APM/APMFlightModesComponentController.cc
+	APM/APMFlightModesComponentController.h
 	APM/APMFollowComponent.cc
+	APM/APMFollowComponent.h
 	APM/APMFollowComponentController.cc
+	APM/APMFollowComponentController.h
 	APM/APMHeliComponent.cc
+	APM/APMHeliComponent.h
 	APM/APMLightsComponent.cc
+	APM/APMLightsComponent.h
 	APM/APMMotorComponent.cc
+	APM/APMMotorComponent.h
 	APM/APMPowerComponent.cc
+	APM/APMPowerComponent.h
 	APM/APMRadioComponent.cc
+	APM/APMRadioComponent.h
 	APM/APMRemoteSupportComponent.cc
+	APM/APMRemoteSupportComponent.h
 	APM/APMSafetyComponent.cc
+	APM/APMSafetyComponent.h
 	APM/APMSensorsComponent.cc
+	APM/APMSensorsComponent.h
 	APM/APMSensorsComponentController.cc
+	APM/APMSensorsComponentController.h
 	APM/APMSubFrameComponent.cc
+	APM/APMSubFrameComponent.h
 	APM/APMSubMotorComponentController.cc
+	APM/APMSubMotorComponentController.h
 	APM/APMTuningComponent.cc
+	APM/APMTuningComponent.h
 
 	Common/ESP8266Component.cc
+	Common/ESP8266Component.h
 	Common/ESP8266ComponentController.cc
+	Common/ESP8266ComponentController.h
 	Common/MotorComponent.cc
+	Common/MotorComponent.h
 	Common/RadioComponentController.cc
+	Common/RadioComponentController.h
 	Common/SyslinkComponent.cc
+	Common/SyslinkComponent.h
 	Common/SyslinkComponentController.cc
-
-	Generic/GenericAutoPilotPlugin.cc
+	Common/SyslinkComponentController.h
 
 	PX4/ActuatorComponent.cc
 	PX4/ActuatorComponent.h
@@ -68,7 +94,9 @@ add_library(AutoPilotPlugins
 	PX4/SensorsComponent.h
 
 	AutoPilotPlugin.cc
+	AutoPilotPlugin.h
     VehicleComponent.cc
+	VehicleComponent.h
 )
 
 target_link_libraries(AutoPilotPlugins
@@ -83,4 +111,5 @@ target_include_directories(AutoPilotPlugins
 		APM
 		Common
 		PX4
+		Generic
 	)

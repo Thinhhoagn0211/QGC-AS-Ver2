@@ -19,7 +19,7 @@
 
 QGC_LOGGING_CATEGORY(LinkInterfaceLog, "qgc.comms.linkinterface")
 
-LinkInterface::LinkInterface(SharedLinkConfigurationPtr &config, QObject *parent)
+LinkInterface::LinkInterface(const SharedLinkConfigurationPtr &config, QObject *parent)
     : QObject(parent)
     , _config(config)
 {
@@ -108,7 +108,12 @@ void LinkInterface::_freeMavlinkChannel()
 void LinkInterface::writeBytesThreadSafe(const char *bytes, int length)
 {
     const QByteArray data(bytes, length);
-    (void) QMetaObject::invokeMethod(this, "_writeBytes", Qt::AutoConnection, data);
+    (void) QMetaObject::invokeMethod(
+        this,
+        "_writeBytes",
+        Qt::AutoConnection,
+        Q_ARG(QByteArray, data)
+    );
 }
 
 void LinkInterface::removeVehicleReference()

@@ -10,7 +10,7 @@
 #include "FirmwarePlugin.h"
 #include "AutoPilotPlugin.h"
 #include "Autotune.h"
-#include "GenericAutoPilotPlugin.h"
+#include "AutoPilotPlugins/Generic/GenericAutoPilotPlugin.h"
 #include "MAVLinkProtocol.h"
 #include "QGCApplication.h"
 #include "QGCCameraManager.h"

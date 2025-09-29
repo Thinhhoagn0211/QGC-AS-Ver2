@@ -18,9 +18,13 @@
 Q_DECLARE_LOGGING_CATEGORY(MAVLinkChartControllerLog)
 
 class MAVLinkInspectorController;
-class QAbstractSeries;
+// class QAbstractSeries;
 class QGCMAVLinkMessageField;
 class QTimer;
+
+namespace QtCharts {
+    class QAbstractSeries;
+}
 
 class MAVLinkChartController : public QObject
 {
@@ -42,7 +46,7 @@ public:
     explicit MAVLinkChartController(QObject *parent = nullptr);
     ~MAVLinkChartController();
 
-    Q_INVOKABLE void addSeries(QGCMAVLinkMessageField *field, QAbstractSeries *series);
+    Q_INVOKABLE void addSeries(QGCMAVLinkMessageField *field, QtCharts::QAbstractSeries *series);
     Q_INVOKABLE void delSeries(QGCMAVLinkMessageField *field);
 
     void setInspectorController(MAVLinkInspectorController *inspectorController);

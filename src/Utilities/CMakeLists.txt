@@ -38,13 +38,16 @@ if(IOS)
     )
 endif()
 
+find_package(Qt5Sensors REQUIRED)
+
 add_library(Utilities ${UTILITIES_SRC})
 
 target_link_libraries(Utilities
-	PUBLIC
-		Qt5::Core
-		Qt5::Network
-		qgc
+    PUBLIC
+        Qt5::Core
+        Qt5::Network
+        Qt5::Sensors
+        qgc
 )
 
 target_include_directories(Utilities

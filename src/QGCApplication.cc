@@ -22,7 +22,8 @@
 #include <QtQuick/QQuickImageProvider>
 #include <QtQuick/QQuickWindow>
 #include <QtQuickControls2/QQuickStyle>
-
+#include <QtQuick/QSGRendererInterface>
+#include <QLibraryInfo>
 #include <QtCore/private/qthread_p.h>
 
 #include "QGCLogging.h"
@@ -48,6 +49,7 @@
 #include "VehicleComponent.h"
 #include "VideoManager.h"
 
+
 #ifndef QGC_NO_SERIAL_LINK
 #include "SerialLink.h"
 #endif
@@ -62,6 +64,7 @@ QGCApplication::QGCApplication(int &argc, char *argv[], const QGCCommandLinePars
     , _logOutput(cli.logOutput)
     , _systemId(cli.systemId.value_or(0))
 {
+    
     _msecsElapsedTime.start();
 
     // Setup for network proxy support
@@ -81,20 +84,20 @@ QGCApplication::QGCApplication(int &argc, char *argv[], const QGCCommandLinePars
     if (_runningUnitTests || _simpleBootTest) {
         // We don't want unit tests to use the same QSettings space as the normal app. So we tweak the app
         // name. Also we want to run unit tests with clean settings every time.
-        applicationName = QStringLiteral("%1_unittest").arg(QGC_APP_NAME);
+        applicationName = QStringLiteral("%1_unittest").arg("QGroundcontrol");
     } else {
 #ifdef QGC_DAILY_BUILD
         // This gives daily builds their own separate settings space. Allowing you to use daily and stable builds
         // side by side without daily screwing up your stable settings.
         applicationName = QStringLiteral("%1 Daily").arg(QGC_APP_NAME);
 #else
-        applicationName = QGC_APP_NAME;
+        applicationName = "QGroundcontrol";
 #endif
     }
     setApplicationName(applicationName);
     setOrganizationName(QGC_ORG_NAME);
     setOrganizationDomain(QGC_ORG_DOMAIN);
-    setApplicationVersion(QString(QGC_APP_VERSION_STR));
+    setApplicationVersion(QString("QGC_APP_VERSION_STR"));
 
     // Set settings format
     QSettings::setDefaultFormat(QSettings::IniFormat);
@@ -125,13 +128,13 @@ QGCApplication::QGCApplication(int &argc, char *argv[], const QGCCommandLinePars
         // Determine if upgrade message for settings version bump is required. Check and clear must happen before toolbox is started since
         // that will write some settings.
         if (settings.contains(_settingsVersionKey)) {
-            if (settings.value(_settingsVersionKey).toInt() != QGC_SETTINGS_VERSION) {
+            if (settings.value(_settingsVersionKey).toString() != QLatin1String("V4.4.5")) {
                 settings.clear();
                 _settingsUpgraded = true;
             }
         }
     }
-    settings.setValue(_settingsVersionKey, QGC_SETTINGS_VERSION);
+    settings.setValue(_settingsVersionKey, "V4.4.5");
 
     if (fClearCache) {
         QDir dir(ParameterManager::parameterCacheDir());
@@ -178,7 +181,7 @@ void QGCApplication::setLanguage()
     removeTranslator(&_qgcTranslatorQtLibs);
     if (_locale.name() != "en_US") {
         QLocale::setDefault(_locale);
-        if (_qgcTranslatorQtLibs.load("qt_" + _locale.name(), QLibraryInfo::path(QLibraryInfo::TranslationsPath))) {
+        if (_qgcTranslatorQtLibs.load("qt_" + _locale.name(), QLibraryInfo::location(QLibraryInfo::TranslationsPath))) {
             installTranslator(&_qgcTranslatorQtLibs);
         } else {
             qCWarning(QGCApplicationLog) << "Qt lib localization for" << _locale.name() << "is not present";
@@ -235,10 +238,18 @@ void QGCApplication::init()
 
 void QGCApplication::_initVideo()
 {
-#ifdef QGC_GST_STREAMING
-    // Gstreamer video playback requires OpenGL
-    QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGL);
+// #ifdef QGC_GST_STREAMING
+//     // Gstreamer video playback requires OpenGL
+//     QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGL);
+// #endif
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 3, 0)
+    #if QT_CONFIG(vulkan) || QT_CONFIG(opengl)
+        QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGL);
+    #endif
 #endif
+
+
 
     QGCCorePlugin::instance();  // CorePlugin must be initialized before VideoManager for Video Cleanup
     VideoManager::instance();
@@ -254,7 +265,10 @@ void QGCApplication::_initForNormalAppBoot()
     MAVLinkProtocol::instance()->init();
     MultiVehicleManager::instance()->init();
     _qmlAppEngine = QGCCorePlugin::instance()->createQmlApplicationEngine(this);
-    QObject::connect(_qmlAppEngine, &QQmlApplicationEngine::objectCreationFailed, this, QCoreApplication::quit, Qt::QueuedConnection);
+    #if QT_VERSION >= QT_VERSION_CHECK(6, 3, 0)
+        QObject::connect(_qmlAppEngine, &QQmlApplicationEngine::objectCreationFailed,
+                        this, QCoreApplication::quit, Qt::QueuedConnection);
+    #endif
     QGCCorePlugin::instance()->createRootWindow(_qmlAppEngine);
 
     AudioOutput::instance()->init(SettingsManager::instance()->appSettings()->audioMuted());
@@ -268,10 +282,11 @@ void QGCApplication::_initForNormalAppBoot()
 
     // Set the window icon now that custom plugin has a chance to override it
 #ifdef Q_OS_LINUX
-    QUrl windowIcon = QUrl("qrc:/res/qgroundcontrol.ico");
-    windowIcon = _qmlAppEngine->interceptUrl(windowIcon, QQmlAbstractUrlInterceptor::UrlString);
-    // The interceptor needs "qrc:/path" but QIcon expects ":/path"
-    setWindowIcon(QIcon(":" + windowIcon.path()));
+    // QUrl windowIcon = QUrl("qrc:/res/qgroundcontrol.ico");
+    // windowIcon = _qmlAppEngine->interceptUrl(windowIcon, QQmlAbstractUrlInterceptor::UrlString);
+    // // The interceptor needs "qrc:/path" but QIcon expects ":/path"
+    // setWindowIcon(QIcon(":" + windowIcon.path()));
+    setWindowIcon(QIcon(":/res/qgroundcontrol.ico"));
 #endif
 
     // Safe to show popup error messages now that main window is created

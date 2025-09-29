@@ -11,7 +11,7 @@
 
 #include <QtCore/QCommandLineOption>
 #include <QtCore/QCoreApplication>
-
+#include <memory>
 namespace QGCCommandLineParser {
 
 static const QString kOptSystemId        = QStringLiteral("system-id");
@@ -63,7 +63,8 @@ CommandLineParseResult parseCommandLine()
     QCommandLineParser& parser = *out.parser;
     parser.setSingleDashWordOptionMode(QCommandLineParser::ParseAsLongOptions);
     parser.setOptionsAfterPositionalArgumentsMode(QCommandLineParser::ParseAsOptions);
-    parser.setApplicationDescription(QStringLiteral(QGC_APP_DESCRIPTION));
+    // parser.setApplicationDescription(QStringLiteral(QGC_APP_DESCRIPTION));
+    parser.setApplicationDescription(QStringLiteral("QGC_APP_DESCRIPTION"));
 
     const QCommandLineOption helpOption = parser.addHelpOption();
     const QCommandLineOption versionOption = parser.addVersionOption();

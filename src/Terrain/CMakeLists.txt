@@ -1,9 +1,5 @@
 
 add_library(Terrain
-    Providers/TerrainQueryCopernicus.cc
-    Providers/TerrainQueryCopernicus.h
-    Providers/TerrainTileCopernicus.cc
-    Providers/TerrainTileCopernicus.h
     TerrainQuery.cc
     TerrainQuery.h
     TerrainQueryInterface.cc
@@ -22,4 +18,4 @@ target_link_libraries(Terrain
 )
 
 target_include_directories(Terrain PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-
+add_subdirectory(Providers)
