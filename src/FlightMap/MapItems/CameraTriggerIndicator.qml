@@ -7,13 +7,13 @@
  *
  ****************************************************************************/
 
-import QtQuick
-import QtLocation
-import QtQuick.Controls
+import QtQuick 2.4
+import QtLocation 5.3
+import QtQuick.Controls 2.2
 
-import QGroundControl
-
-import QGroundControl.Controls
+import QGroundControl 1.0
+import QGroundControl.ScreenTools 1.0
+import QGroundControl.Controls  1.0
 
 
 /// Marker for displaying a camera trigger on the map

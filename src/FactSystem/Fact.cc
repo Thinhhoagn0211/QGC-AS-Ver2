@@ -7,13 +7,19 @@
  *
  ****************************************************************************/
 
+#include <QQmlEngine>
 #include "Fact.h"
+#include "FactMetaData.h"
+#include "FactGroup.h"
+#include "FactPanelController.h"
 #include "FactValueSliderListModel.h"
 #include "QGCApplication.h"
 #include "QGCCorePlugin.h"
 #include "QGCLoggingCategory.h"
 #include <cmath>
 QGC_LOGGING_CATEGORY(FactLog, "qgc.factsystem.fact")
+
+const char* Fact::_factSystemQmlUri = "QGroundControl.FactSystem";
 
 Fact::Fact(QObject *parent)
     : QObject(parent)
@@ -22,6 +28,12 @@ Fact::Fact(QObject *parent)
 
     FactMetaData *const metaData = new FactMetaData(_type, this);
     setMetaData(metaData);
+
+    qmlRegisterType<Fact>               (_factSystemQmlUri, 1, 0, "Fact");
+    qmlRegisterType<FactMetaData>       (_factSystemQmlUri, 1, 0, "FactMetaData");
+    qmlRegisterType<FactPanelController>(_factSystemQmlUri, 1, 0, "FactPanelController");
+
+    qmlRegisterUncreatableType<FactGroup>(_factSystemQmlUri, 1, 0, "FactGroup", "ReferenceOnly");
 
     _init();
 }

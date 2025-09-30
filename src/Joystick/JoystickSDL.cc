@@ -101,7 +101,7 @@ QMap<QString, Joystick*> JoystickSDL::discover(MultiVehicleManager* _multiVehicl
 }
 
 void JoystickSDL::_loadGamepadMappings(void) {
-    QFile file(":/db/mapping/joystick/gamecontrollerdb.txt");
+    QFile file(":/gamecontrollerdb.txt");
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
     {
         qWarning() << "Couldn't load GameController mapping database.";

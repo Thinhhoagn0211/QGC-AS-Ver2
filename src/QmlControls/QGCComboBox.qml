@@ -7,15 +7,16 @@
  *
  ****************************************************************************/
 
-import QtQuick
-import QtQuick.Window
-import QtQuick.Controls
-import QtQuick.Templates as T
+import QtQuick 2.4
+import QtQuick.Window 2.1
+import QtQuick.Controls 2.2
+import QtQuick.Templates 2.2 as T
 
-import QGroundControl
+import QGroundControl 1.0
+import QGroundControl.ScreenTools 1.0
+import QGroundControl.Palette 1.0
 
-
-import QGroundControl.Controls
+import QGroundControl.Controls  1.0
 
 T.ComboBox {
     id:             control

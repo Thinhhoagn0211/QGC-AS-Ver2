@@ -7,12 +7,12 @@
  *
  ****************************************************************************/
 
-import QtQuick
-import QtQml.Models
+import QtQuick 2.4
+import QtQml.Models 2.1
 
-import QGroundControl
-import QGroundControl.Controls
-
+import QGroundControl 1.0
+import QGroundControl.Controls  1.0
+import QGroundControl.ScreenTools 1.0
 
 /// A PreFlightCheckGroup manages a set of PreFlightCheckButtons as a single entity.
 Column  {

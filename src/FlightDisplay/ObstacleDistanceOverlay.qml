@@ -7,9 +7,9 @@
  *
  ****************************************************************************/
 
-import QtQuick
+import QtQuick 2.4
 
-import QGroundControl
+import QGroundControl 1.0
 
 
 Canvas {

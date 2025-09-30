@@ -7,27 +7,27 @@
  *
  ****************************************************************************/
 
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Dialogs
-import QtQuick.Layouts
+import QtQuick 2.4
+import QtQuick.Controls 2.2
+import QtQuick.Dialogs 1.2
+import QtQuick.Layouts 1.2
 
-import QtLocation
-import QtPositioning
-import QtQuick.Window
-import QtQml.Models
+import QtLocation 5.3
+import QtPositioning 5.3
+import QtQuick.Window 2.1
+import QtQml.Models 2.1
 
-import QGroundControl
+import QGroundControl 1.0
 
-import QGroundControl.Controls
+import QGroundControl.Controls  1.0
+import QGroundControl.Controllers 1.0
+import QGroundControl.FlightDisplay  1.0
+import QGroundControl.FlightMap  1.0
+import QGroundControl.ScreenTools 1.0
 
-import QGroundControl.FlightDisplay
-import QGroundControl.FlightMap
+// // import QGroundControl.UTMSP 1.0
 
-
-import QGroundControl.UTMSP
-
-import QGroundControl.Viewer3D
+// import QGroundControl.Viewer3D 1.0
 
 Item {
     id: _root
@@ -173,20 +173,20 @@ Item {
             visible:            false
         }
 
-        Viewer3D {
-            id: viewer3DWindow
-            anchors.fill: parent
-        }
+        // Viewer3D {
+        //     id: viewer3DWindow
+        //     anchors.fill: parent
+        // }
     }
 
-    UTMSPActivationStatusBar {
-        activationStartTimestamp:   UTMSPStateStorage.startTimeStamp
-        activationApproval:         UTMSPStateStorage.showActivationTab && QGroundControl.utmspManager.utmspVehicle.vehicleActivation
-        flightID:                   UTMSPStateStorage.flightID
-        anchors.fill:               parent
+    // UTMSPActivationStatusBar {
+    //     activationStartTimestamp:   UTMSPStateStorage.startTimeStamp
+    //     activationApproval:         UTMSPStateStorage.showActivationTab && QGroundControl.utmspManager.utmspVehicle.vehicleActivation
+    //     flightID:                   UTMSPStateStorage.flightID
+    //     anchors.fill:               parent
 
-        function onActivationTriggered(value) {
-            _root.utmspSendActTrigger = value
-        }
-    }
+    //     function onActivationTriggered(value) {
+    //         _root.utmspSendActTrigger = value
+    //     }
+    // }
 }

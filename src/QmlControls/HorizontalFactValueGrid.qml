@@ -7,19 +7,19 @@
  *
  ****************************************************************************/
 
-import QtQuick
-import QtQuick.Layouts
-import QtQuick.Controls
-import QtQml
+import QtQuick 2.4
+import QtQuick.Layouts 1.2
+import QtQuick.Controls 2.2
+import QtQml 2.15
 
-import QGroundControl.Controls
+import QGroundControl.Controls  1.0
+import QGroundControl.ScreenTools 1.0
+import QGroundControl.Palette  1.0
+import QGroundControl.FlightMap  1.0
+import QGroundControl.Templates 1.0
+import QGroundControl 1.0
 
-
-
-import QGroundControl.FlightMap
-import QGroundControl
-
-HorizontalFactValueGridTemplate {
+HorizontalFactValueGrid {
     id:                     _root
     Layout.preferredWidth:  topLayout.width
     Layout.preferredHeight: topLayout.height

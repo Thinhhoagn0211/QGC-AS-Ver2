@@ -1,9 +1,11 @@
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
+import QtQuick 2.4
+import QtQuick.Controls 2.2
+import QtQuick.Layouts 1.2
 
-import QGroundControl
-import QGroundControl.Controls
+import QGroundControl 1.0
+import QGroundControl.ScreenTools 1.0
+import QGroundControl.Palette 1.0
+import QGroundControl.Controls  1.0
 
 
 TextField {
@@ -22,7 +24,7 @@ TextField {
     rightPadding:       _marginPadding + unitsHelpLayout.width
     topPadding:         _marginPadding
     bottomPadding:      _marginPadding
-    EnterKey.type:      Qt.EnterKeyDone
+    // EnterKey.type:      Qt.EnterKeyDone
 
     property bool   showUnits:          false
     property bool   showHelp:           false

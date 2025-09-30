@@ -7,11 +7,11 @@
  *
  ****************************************************************************/
 
-import QtQml.Models
+import QtQml.Models 2.1
 
-import QGroundControl
-import QGroundControl.Controls
-
+import QGroundControl 1.0
+import QGroundControl.Controls  1.0
+import QGroundControl.ScreenTools 1.0
 ListModel {
     ListElement {
         name: qsTr("General")

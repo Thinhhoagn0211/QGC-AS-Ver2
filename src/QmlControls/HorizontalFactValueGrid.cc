@@ -18,5 +18,5 @@ const QString HorizontalFactValueGrid::vehicleCardSettingsGroup("VehicleCardUser
 HorizontalFactValueGrid::HorizontalFactValueGrid(QQuickItem* parent)
     : FactValueGrid(parent)
 {
-
+    
 }

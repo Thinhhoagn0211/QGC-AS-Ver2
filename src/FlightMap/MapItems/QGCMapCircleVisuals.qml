@@ -7,18 +7,18 @@
  *
  ****************************************************************************/
 
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Shapes
-import QtLocation
-import QtPositioning
+import QtQuick 2.4
+import QtQuick.Controls 2.2
+import QtQuick.Shapes 1.15
+import QtLocation 5.3
+import QtPositioning 5.3
 
-import QGroundControl
+import QGroundControl 1.0
 
 
-import QGroundControl.Controls
-import QGroundControl.FlightMap
-
+import QGroundControl.Controls  1.0
+import QGroundControl.FlightMap  1.0
+import QGroundControl.ScreenTools 1.0
 /// QGCMapCircle map visuals
 Item {
     id: _root

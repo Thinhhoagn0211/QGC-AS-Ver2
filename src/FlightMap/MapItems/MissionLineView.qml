@@ -7,11 +7,11 @@
  *
  ****************************************************************************/
 
-import QtQuick
-import QtLocation
-import QtPositioning
+import QtQuick 2.4
+import QtLocation 5.3
+import QtPositioning 5.3
 
-import QGroundControl
+import QGroundControl 1.0
 
 
 /// The MissionLineView control is used to add lines between mission items

@@ -21,6 +21,7 @@
 #include "VehicleLinkManager.h"
 #include "LinkInterface.h"
 #include "QmlObjectListModel.h"
+#include <QQmlEngine>
 #ifdef Q_OS_IOS
 #include "MobileScreenMgr.h"
 #elif defined(Q_OS_ANDROID)
@@ -43,7 +44,7 @@ MultiVehicleManager::MultiVehicleManager(QObject *parent)
     , _selectedVehicles(new QmlObjectListModel(this))
 {
     qCDebug(MultiVehicleManagerLog) << this;
-
+    qmlRegisterUncreatableType<MultiVehicleManager>("QGroundControl.MultiVehicleManager", 1, 0, "MultiVehicleManager", "Reference only");
     (void) qRegisterMetaType<Vehicle::MavCmdResultFailureCode_t>("MavCmdResultFailureCode_t");
 }
 

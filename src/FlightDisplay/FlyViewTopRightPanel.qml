@@ -7,16 +7,17 @@
  *
  ****************************************************************************/
 
-import QtQuick
-import QtQuick.Layouts
+import QtQuick 2.3
+import QtQuick.Layouts 1.2
 
-import QGroundControl
+import QGroundControl 1.0
 
-import QGroundControl.FactControls
-import QGroundControl.Controls
-import QGroundControl.FlightDisplay
-import QGroundControl.FlightMap
-
+import QGroundControl.FactControls  1.0
+import QGroundControl.Palette  1.0
+import QGroundControl.Controls  1.0
+import QGroundControl.FlightDisplay  1.0
+import QGroundControl.FlightMap  1.0
+import QGroundControl.ScreenTools 1.0
 
 
 
@@ -86,7 +87,7 @@ Rectangle {
                 }
 
                 gradient: Gradient {
-                    orientation: Gradient.Vertical
+                    // orientation: Gradient.Vertical
                     GradientStop { position: 0.00; color: topRightPanel.color }
                     GradientStop { position: 0.05; color: "transparent" }
 

@@ -646,7 +646,6 @@ HEADERS += \
     src/ADSB/ADSBTCPLink.h \
     src/AnalyzeView/GeoTagWorker.h \
     src/AnalyzeView/MAVLinkChartController.h \
-    src/AnalyzeView/MAVLinkConsoleController.h \
     src/AnalyzeView/MAVLinkInspectorController.h \
     src/AnalyzeView/MAVLinkMessage.h \
     src/AnalyzeView/MAVLinkMessageField.h \
@@ -705,6 +704,7 @@ HEADERS += \
     src/FactSystem/FactGroupListModel.h \
     src/FactSystem/FactGroupWithId.h \
     src/FactSystem/SettingsFact.h \
+    src/FactSystem/FactSystem.h \
     src/FirmwarePlugin/APM/APM.h \
     src/FirmwarePlugin/APM/APMFirmwarePluginFactory.h \
     src/FirmwarePlugin/APM/APMParameterMetaData.h \
@@ -1379,20 +1379,20 @@ HEADERS += \
     src/FactSystem/FactControls/FactPanelController.h \
     src/FactSystem/FactGroup.h \
     src/FactSystem/FactMetaData.h \
-    src/FactSystem/FactSystem.h \
     src/FactSystem/FactValueSliderListModel.h \
     src/FactSystem/ParameterManager.h \
     src/FactSystem/SettingsFact.h \
+    src/FactSystem/FactSystem.h \
 
 SOURCES += \
     src/FactSystem/Fact.cc \
     src/FactSystem/FactControls/FactPanelController.cc \
     src/FactSystem/FactGroup.cc \
     src/FactSystem/FactMetaData.cc \
-    src/FactSystem/FactSystem.cc \
     src/FactSystem/FactValueSliderListModel.cc \
     src/FactSystem/ParameterManager.cc \
     src/FactSystem/SettingsFact.cc \
+    src/FactSystem/FactSystem.cc \
 
 #-------------------------------------------------------------------------------------
 # MAVLink Inspector
@@ -1429,16 +1429,16 @@ contains (CONFIG, DISABLE_VIDEOSTREAMING) {
 } else:exists(user_config.pri):infile(user_config.pri, DEFINES, DISABLE_VIDEOSTREAMING) {
     message("Skipping support for video streaming (manual override from user_config.pri)")
 } else {
-    include(src/VideoReceiver/VideoReceiver.pri)
+    include(src/VideoManager/VideoReceiver/VideoReceiver.pri)
 }
 
 !VideoEnabled {
     INCLUDEPATH += \
-        src/VideoReceiver
+        src/VideoManager/VideoReceiver
 
     HEADERS += \
         src/VideoManager/GLVideoItemStub.h \
-        src/VideoReceiver/VideoReceiver.h
+        src/VideoManager/VideoReceiver/VideoReceiver.h
 
     SOURCES += \
         src/VideoManager/GLVideoItemStub.cc

@@ -11,8 +11,8 @@ add_library(AnalyzeView
 	LogEntry.h
 	MAVLinkChartController.cc
 	MAVLinkChartController.h
-	MAVLinkConsoleController.cc
-	MAVLinkConsoleController.h
+	MavlinkConsoleController.cc
+	MavlinkConsoleController.h
 	MAVLinkInspectorController.cc
 	MAVLinkInspectorController.h
 	MAVLinkMessage.cc

@@ -7,11 +7,13 @@
  *
  ****************************************************************************/
 
-import QtQuick
+import QtQuick 2.15
 
-import QGroundControl
-import QGroundControl.Controls
-import QGroundControl.Toolbar
+import QGroundControl 1.0
+import QGroundControl.Controls  1.0
+import QGroundControl.Controllers 1.0
+import QGroundControl.ScreenTools 1.0
+// import QGroundControl.Toolbar 1.0
 
 //-------------------------------------------------------------------------
 //-- Toolbar Indicators

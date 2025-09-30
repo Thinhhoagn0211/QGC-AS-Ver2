@@ -30,3 +30,7 @@ PolygonEditor               1.0 PolygonEditor.qml
 ProximityRadarMapView       1.0 ProximityRadarMapView.qml
 SplitIndicator              1.0 SplitIndicator.qml
 VehicleMapItem              1.0 VehicleMapItem.qml
+IntegratedCompassAttitude  1.0 IntegratedCompassAttitude.qml
+IntegratedAttitudeIndicator 1.0 IntegratedAttitudeIndicator.qml
+CompassDial                1.0 CompassDial.qml
+CompassHeadingIndicator   1.0 CompassHeadingIndicator.qml

@@ -7,13 +7,13 @@
  *
  ****************************************************************************/
 
-import QtQuick
-import QtLocation
-import QtPositioning
+import QtQuick 2.4
+import QtLocation 5.15
+import QtPositioning 5.15
 
-import QGroundControl
-import QGroundControl.Controls
-import QGroundControl.FlightMap
+import QGroundControl 1.0
+import QGroundControl.Controls  1.0
+import QGroundControl.FlightMap  1.0
 
 // Adds visual items associated with the Flight Plan to the map.
 // Currently only used by Fly View even though it's called PlanMapItems!

@@ -7,19 +7,19 @@
  *
  ****************************************************************************/
 
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Dialogs
-import QtLocation
-import QtPositioning
-import QtQuick.Layouts
+import QtQuick 2.4
+import QtQuick.Controls 2.2
+import QtQuick.Dialogs 1.2
+import QtLocation 5.3
+import QtPositioning 5.3
+import QtQuick.Layouts 1.2
 
-import QGroundControl
+import QGroundControl 1.0
 
-import QGroundControl.Controls
+import QGroundControl.Controls  1.0
+import QGroundControl.ScreenTools 1.0
 
-
-import QGroundControl.FlightMap
+import QGroundControl.FlightMap  1.0
 
 /// This provides the smarts behind the guided mode commands, minus the user interface. This way you can change UI
 /// without affecting the underlying functionality.

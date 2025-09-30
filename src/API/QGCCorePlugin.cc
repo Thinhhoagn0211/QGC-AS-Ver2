@@ -257,7 +257,9 @@ void QGCCorePlugin::factValueGridCreateDefaultSettings(FactValueGrid* factValueG
 QQmlApplicationEngine *QGCCorePlugin::createQmlApplicationEngine(QObject *parent)
 {
     QQmlApplicationEngine *const qmlEngine = new QQmlApplicationEngine(parent);
-    qmlEngine->addImportPath(QStringLiteral("qrc:/qml"));
+    qmlEngine->addImportPath("qrc:/qml");
+    qmlEngine->addImportPath("C:/Qt/5.15.2/msvc2019_64/qml");
+    qDebug() << "Current import paths:" << qmlEngine->importPathList();
     qmlEngine->rootContext()->setContextProperty(QStringLiteral("joystickManager"), JoystickManager::instance());
     qmlEngine->rootContext()->setContextProperty(QStringLiteral("debugMessageModel"), QGCLogging::instance());
     return qmlEngine;
@@ -265,7 +267,7 @@ QQmlApplicationEngine *QGCCorePlugin::createQmlApplicationEngine(QObject *parent
 
 void QGCCorePlugin::createRootWindow(QQmlApplicationEngine *qmlEngine)
 {
-    qmlEngine->load(QUrl(QStringLiteral("qrc:/qml/QGroundControl/MainWindow.qml")));
+    qmlEngine->load(QUrl(QStringLiteral("qrc:/qml/MainWindow.qml")));
 }
 
 VideoReceiver *QGCCorePlugin::createVideoReceiver(QObject *parent)

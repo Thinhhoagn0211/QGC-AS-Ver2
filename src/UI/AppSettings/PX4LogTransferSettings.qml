@@ -8,18 +8,18 @@
  ****************************************************************************/
 
 
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Dialogs
-import QtQuick.Layouts
+import QtQuick 2.4
+import QtQuick.Controls 2.2
+import QtQuick.Dialogs 1.2
+import QtQuick.Layouts 1.2
 
-import QGroundControl
+import QGroundControl 1.0
 
-import QGroundControl.FactControls
-import QGroundControl.Controls
-
-
-
+import QGroundControl.FactControls  1.0
+import QGroundControl.Controls  1.0
+import QGroundControl.Palette  1.0 
+import QGroundControl.ScreenTools 1.0
+import QGroundControl.FactSystem 1.0
 
 Rectangle {
     id:             __mavlinkRoot
@@ -79,7 +79,7 @@ Rectangle {
         id:         emptyEmailDialog
         visible:    false
         //icon:       StandardIcon.Warning
-        buttons:    MessageDialog.Close
+        standardButtons:    MessageDialog.Close
         title:      qsTr("MAVLink Logging")
         text:       qsTr("Please enter an email address before uploading MAVLink log files.")
     }
@@ -519,7 +519,7 @@ Rectangle {
                                 id:         deleteDialog
                                 visible:    false
                                 //icon:       StandardIcon.Warning
-                                buttons:    MessageDialog.Yes | MessageDialog.No
+                                standardButtons:    MessageDialog.Yes | MessageDialog.No
                                 title:      qsTr("Delete Selected Log Files")
                                 text:       qsTr("Confirm deleting selected log files?")
                                 onButtonClicked: function (button, role) {
@@ -546,7 +546,7 @@ Rectangle {
                                 id:         uploadDialog
                                 visible:    false
                                 //icon:       StandardIcon.Question
-                                buttons:    MessageDialog.Yes | MessageDialog.No
+                                standardButtons:    MessageDialog.Yes | MessageDialog.No
                                 title:      qsTr("Upload Selected Log Files")
                                 text:       qsTr("Confirm uploading selected log files?")
                                 onButtonClicked: function (button, role) {
@@ -567,7 +567,7 @@ Rectangle {
                                 id:         cancelDialog
                                 visible:    false
                                 //icon:       StandardIcon.Warning
-                                buttons:    MessageDialog.Yes | MessageDialog.No
+                                standardButtons:    MessageDialog.Yes | MessageDialog.No
                                 title:      qsTr("Cancel Upload")
                                 text:       qsTr("Confirm canceling the upload process?")
                                 onButtonClicked: function (button, role) {

@@ -1,12 +1,12 @@
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
-import QtCharts
+import QtQuick 2.4
+import QtQuick.Controls 2.2
+import QtQuick.Layouts 1.2
+import QtCharts 2.3
 
-import QGroundControl
+import QGroundControl 1.0
 
-import QGroundControl.Controls
-
+import QGroundControl.Controls  1.0
+import QGroundControl.ScreenTools 1.0
 ChartView {
     id:                 chartView
     theme:              ChartView.ChartThemeDark

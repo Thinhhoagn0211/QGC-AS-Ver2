@@ -14,9 +14,9 @@
  *   @author Gus Grubba <gus@auterion.com>
  */
 
-import QtQuick
-import QtQuick.Controls
-import org.freedesktop.gstreamer.Qt6GLVideoItem
+import QtQuick 2.4
+import QtQuick.Controls 2.2
+import org.freedesktop.gstreamer.Qt6GLVideoItem 1.0
 
 GstGLQt6VideoItem {
     id: videoBackground

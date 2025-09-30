@@ -7,22 +7,22 @@
  *
  ****************************************************************************/
 
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Dialogs
-import QtQuick.Layouts
+import QtQuick 2.4
+import QtQuick.Controls 2.2
+import QtQuick.Dialogs 1.2
+import QtQuick.Layouts 1.2
 
-import QtLocation
-import QtPositioning
-import QtQuick.Window
-import QtQml.Models
+import QtLocation 5.3
+import QtPositioning 5.3
+import QtQuick.Window 2.1
+import QtQml.Models 2.1
 
-import QGroundControl
-import QGroundControl.Controls
+import QGroundControl 1.0
+import QGroundControl.Controls  1.0
 
-import QGroundControl.FlightDisplay
+import QGroundControl.FlightDisplay  1.0
 
-import QGroundControl.FlightMap
+import QGroundControl.FlightMap  1.0
 
 
 // This is the ui overlay layer for the widgets/tools for Fly View

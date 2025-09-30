@@ -7,17 +7,17 @@
  *
  ****************************************************************************/
 
-import QtQuick
-import QtQuick.Controls
-import QtLocation
-import QtPositioning
-import QtQuick.Layouts
+import QtQuick 2.4
+import QtQuick.Controls 2.2
+import QtLocation 5.3
+import QtPositioning 5.3
+import QtQuick.Layouts 1.2
 
-import QGroundControl
+import QGroundControl 1.0
 
 
-import QGroundControl.Controls
-import QGroundControl.FlightMap
+import QGroundControl.Controls  1.0
+import QGroundControl.FlightMap  1.0
 
 Item {
     id: _root

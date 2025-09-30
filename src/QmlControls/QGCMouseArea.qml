@@ -1,8 +1,8 @@
-import QtQuick
+import QtQuick 2.4
 
-import QGroundControl
-import QGroundControl.Controls
-
+import QGroundControl 1.0
+import QGroundControl.Controls  1.0
+import QGroundControl.ScreenTools 1.0
 /// Works just like a regular MouseArea except:
 ///     1) It supports the ability to show touch extents based on QGroundControl.showTouchAreas
 ///     2) You can specify fillItem and it will automatically fill to the size and adjust touch areas on mobile

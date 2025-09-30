@@ -46,7 +46,7 @@ add_subdirectory(QmlControls)
 add_subdirectory(QtLocationPlugin)
 add_subdirectory(Settings)
 add_subdirectory(Terrain)
-# add_subdirectory(UI)
+add_subdirectory(UI)
 add_subdirectory(Utilities)
 add_subdirectory(Vehicle)
 add_subdirectory(VideoManager)
@@ -57,6 +57,7 @@ target_link_libraries(qgc
 		Qt5::QuickControls2
 
 	PUBLIC
+		Qt5::Quick
 		Qt5::QuickWidgets
 		Qt5::Widgets
 
@@ -88,11 +89,12 @@ target_link_libraries(qgc
 		TerrainProviders
         Settings
         Terrain
-        # UI
+        UI
         Utilities
 		Geo
 		LibEvents
         Vehicle
+		VehicleSetup
         VideoManager
 		VideoReceiver
 		GStreamer

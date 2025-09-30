@@ -44,7 +44,7 @@ GST_PLUGIN_STATIC_DECLARE(nvcodec);
 GST_PLUGIN_STATIC_DECLARE(opengl);
 GST_PLUGIN_STATIC_DECLARE(openh264);
 GST_PLUGIN_STATIC_DECLARE(playback);
-GST_PLUGIN_STATIC_DECLARE(qml6);
+GST_PLUGIN_STATIC_DECLARE(qml);
 GST_PLUGIN_STATIC_DECLARE(qsv);
 GST_PLUGIN_STATIC_DECLARE(rtp);
 GST_PLUGIN_STATIC_DECLARE(rtpmanager);
@@ -248,16 +248,16 @@ bool _verifyPlugins()
     g_list_foreach(plugins, _checkPlugin, NULL);
     g_list_free(plugins);
 
-    static constexpr const char *pluginNames[2] = {"qml6", "qgc"};
-    for (const char *name : pluginNames) {
-        GstPlugin *plugin = gst_registry_find_plugin(registry, name);
-        if (!plugin) {
-            qCCritical(GStreamerLog) << name << "plugin NOT found.";
-            result = false;
-            continue;
-        }
-        gst_clear_object(&plugin);
-    }
+    // static constexpr const char *pluginNames[2] = {"qml", "qgc"};
+    // for (const char *name : pluginNames) {
+    //     GstPlugin *plugin = gst_registry_find_plugin(registry, name);
+    //     if (!plugin) {
+    //         qCCritical(GStreamerLog) << name << "plugin NOT found.";
+    //         result = false;
+    //         continue;
+    //     }
+    //     gst_clear_object(&plugin);
+    // }
 
     if (!result) {
         QString pluginPath;
@@ -409,9 +409,9 @@ bool initialize()
 
     _setCodecPriorities(static_cast<GStreamer::VideoDecoderOptions>(SettingsManager::instance()->videoSettings()->forceVideoDecoder()->rawValue().toInt()));
 
-    GstElement *sink = gst_element_factory_make("qml6glsink", nullptr);
+    GstElement *sink = gst_element_factory_make("qmlglsink", nullptr);
     if (!sink) {
-        qCCritical(GStreamerLog) << "failed to init qml6glsink";
+        qCCritical(GStreamerLog) << "failed to init qmlglsink";
         return false;
     }
 

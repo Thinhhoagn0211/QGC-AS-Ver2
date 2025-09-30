@@ -9,7 +9,7 @@
 
 // Custom builds can override this file to add custom guided actions.
 
-import QtQml
+import QtQml 2.15
 
 QtObject {
     function customConfirmAction(actionCode, actionData, mapIndicator, confirmDialog) {

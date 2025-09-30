@@ -16,12 +16,12 @@
 #include <QtCore/QStringListModel>
 
 
-Q_DECLARE_LOGGING_CATEGORY(MAVLinkConsoleControllerLog)
+Q_DECLARE_LOGGING_CATEGORY(MavlinkConsoleControllerLog)
 
 class QGCPalette;
 class Vehicle;
 
-class MAVLinkConsoleController : public QStringListModel
+class MavlinkConsoleController : public QStringListModel
 {
     Q_OBJECT
     
@@ -41,8 +41,8 @@ class MAVLinkConsoleController : public QStringListModel
     };
 
 public:
-    explicit MAVLinkConsoleController(QObject *parent = nullptr);
-    ~MAVLinkConsoleController();
+    explicit MavlinkConsoleController(QObject *parent = nullptr);
+    ~MavlinkConsoleController();
 
     Q_INVOKABLE void sendCommand(const QString &command);
     Q_INVOKABLE QString historyUp(const QString &current) { return _history.up(current); }

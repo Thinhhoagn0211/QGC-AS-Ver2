@@ -7,17 +7,17 @@
  *
  ****************************************************************************/
 
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Dialogs
-import QtQuick.Layouts
+import QtQuick 2.4
+import QtQuick.Controls 2.2
+import QtQuick.Dialogs 1.2
+import QtQuick.Layouts 1.2
 
-import QGroundControl
+import QGroundControl 1.0
 
-import QGroundControl.FactControls
-import QGroundControl.Controls
-
-
+import QGroundControl.FactControls  1.0
+import QGroundControl.Controls  1.0
+import QGroundControl.ScreenTools 1.0
+import QGroundControl.FactSystem 1.0
 import QGroundControl.AutoPilotPlugins.PX4
 
 // Note: Only the _SOURCE parameter can be assumed to be always available. The remainder of the parameters

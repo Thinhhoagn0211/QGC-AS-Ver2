@@ -106,14 +106,10 @@ else()
 endif()
 
 if (GST_FOUND)
-    add_definitions(
-        -DQGC_GST_STREAMING
-    )
-
+    message(STATUS "✅ GStreamer FOUND, enabling QGC_GST_STREAMING")
+    add_definitions(-DQGC_GST_STREAMING)
 else()
-	if (QGC_GST_MICROHARD_ENABLED OR QGC_GST_TAISYNC_ENABLED)
-		message(FATAL_ERROR "You tried to enable Microhard or Taisync but gstreamer is not found. Make sure to set PKG_CONFIG_EXECUTABLE and/or PKG_CONFIG_PATH properly.")
-	endif()
+    message(STATUS "❌ GStreamer NOT found, disabling QGC_GST_STREAMING")
 endif()
 
 #=============================================================================
@@ -188,7 +184,7 @@ if (WIN32)
 	# append application icon resource for Windows
 	set(QGC_RESOURCES
 		${QGC_RESOURCES}
-		${CMAKE_CURRENT_SOURCE_DIR}/windows/QGroundControl.rc)
+		${CMAKE_CURRENT_SOURCE_DIR}/deploy/windows/QGroundControl.rc)
 endif()
 
 if(ANDROID)

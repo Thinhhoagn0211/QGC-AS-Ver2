@@ -7,7 +7,7 @@
  *
  ****************************************************************************/
 
-#include "MAVLinkConsoleController.h"
+#include "MavlinkConsoleController.h"
 #include "MAVLinkProtocol.h"
 #include "MultiVehicleManager.h"
 #include "QGCLoggingCategory.h"
@@ -17,30 +17,30 @@
 #include <QtGui/QGuiApplication>
 #include <QtGui/QClipboard>
 
-QGC_LOGGING_CATEGORY(MAVLinkConsoleControllerLog, "qgc.analyzeview.mavlinkconsolecontroller")
+QGC_LOGGING_CATEGORY(MavlinkConsoleControllerLog, "qgc.analyzeview.MavlinkConsoleController")
 
-MAVLinkConsoleController::MAVLinkConsoleController(QObject *parent)
+MavlinkConsoleController::MavlinkConsoleController(QObject *parent)
     : QStringListModel(parent)
     , _palette(new QGCPalette(this))
 {
-    qCDebug(MAVLinkConsoleControllerLog) << this;
+    qCDebug(MavlinkConsoleControllerLog) << this;
 
-    (void) connect(MultiVehicleManager::instance(), &MultiVehicleManager::activeVehicleChanged, this, &MAVLinkConsoleController::_setActiveVehicle);
+    (void) connect(MultiVehicleManager::instance(), &MultiVehicleManager::activeVehicleChanged, this, &MavlinkConsoleController::_setActiveVehicle);
 
     _setActiveVehicle(MultiVehicleManager::instance()->activeVehicle());
 }
 
-MAVLinkConsoleController::~MAVLinkConsoleController()
+MavlinkConsoleController::~MavlinkConsoleController()
 {
     if (_vehicle) {
         QByteArray msg;
         _sendSerialData(msg, true);
     }
 
-    qCDebug(MAVLinkConsoleControllerLog) << this;
+    qCDebug(MavlinkConsoleControllerLog) << this;
 }
 
-void MAVLinkConsoleController::sendCommand(const QString &command)
+void MavlinkConsoleController::sendCommand(const QString &command)
 {
     QString output = command;
 
@@ -57,7 +57,7 @@ void MAVLinkConsoleController::sendCommand(const QString &command)
     _cursorHomePos = -1;
 }
 
-QString MAVLinkConsoleController::handleClipboard(const QString &command_pre)
+QString MavlinkConsoleController::handleClipboard(const QString &command_pre)
 {
     QString clipboardData = command_pre + QGuiApplication::clipboard()->text();
 
@@ -71,7 +71,7 @@ QString MAVLinkConsoleController::handleClipboard(const QString &command_pre)
     return clipboardData;
 }
 
-void MAVLinkConsoleController::_setActiveVehicle(Vehicle *vehicle)
+void MavlinkConsoleController::_setActiveVehicle(Vehicle *vehicle)
 {
     for (QMetaObject::Connection &con : _connections) {
         (void) disconnect(con);
@@ -86,11 +86,11 @@ void MAVLinkConsoleController::_setActiveVehicle(Vehicle *vehicle)
         _cursorY = 0;
         _cursorX = 0;
         _cursorHomePos = -1;
-        _connections << connect(_vehicle, &Vehicle::mavlinkSerialControl, this, &MAVLinkConsoleController::_receiveData);
+        _connections << connect(_vehicle, &Vehicle::mavlinkSerialControl, this, &MavlinkConsoleController::_receiveData);
     }
 }
 
-void MAVLinkConsoleController::_receiveData(uint8_t device, uint8_t flags, uint16_t timeout, uint32_t baudrate, const QByteArray &data)
+void MavlinkConsoleController::_receiveData(uint8_t device, uint8_t flags, uint16_t timeout, uint32_t baudrate, const QByteArray &data)
 {
     Q_UNUSED(flags); Q_UNUSED(timeout); Q_UNUSED(baudrate);
 
@@ -133,10 +133,10 @@ void MAVLinkConsoleController::_receiveData(uint8_t device, uint8_t flags, uint1
     }
 }
 
-void MAVLinkConsoleController::_sendSerialData(const QByteArray &data, bool close)
+void MavlinkConsoleController::_sendSerialData(const QByteArray &data, bool close)
 {
     if (!_vehicle) {
-        qCWarning(MAVLinkConsoleControllerLog) << "Internal error";
+        qCWarning(MavlinkConsoleControllerLog) << "Internal error";
         return;
     }
 
@@ -177,7 +177,7 @@ void MAVLinkConsoleController::_sendSerialData(const QByteArray &data, bool clos
     }
 }
 
-bool MAVLinkConsoleController::_processANSItext(QByteArray &line)
+bool MavlinkConsoleController::_processANSItext(QByteArray &line)
 {
     // Iterate over the incoming buffer to parse off known ANSI control codes
     for (int i = 0; i < line.size(); i++) {
@@ -247,7 +247,7 @@ bool MAVLinkConsoleController::_processANSItext(QByteArray &line)
     return true;
 }
 
-QString MAVLinkConsoleController::_transformLineForRichText(const QString &line) const
+QString MavlinkConsoleController::_transformLineForRichText(const QString &line) const
 {
     QString ret = line.toHtmlEscaped().replace(" ","&nbsp;").replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;");
 
@@ -260,7 +260,7 @@ QString MAVLinkConsoleController::_transformLineForRichText(const QString &line)
     return ret;
 }
 
-QString MAVLinkConsoleController::_getText() const
+QString MavlinkConsoleController::_getText() const
 {
     QString ret;
     if (rowCount() > 0) {
@@ -274,7 +274,7 @@ QString MAVLinkConsoleController::_getText() const
     return ret;
 }
 
-void MAVLinkConsoleController::_writeLine(int line, const QByteArray &text)
+void MavlinkConsoleController::_writeLine(int line, const QByteArray &text)
 {
     const int rc = rowCount();
     if (line >= rc) {
@@ -299,7 +299,7 @@ void MAVLinkConsoleController::_writeLine(int line, const QByteArray &text)
     _cursorX += text.size();
 }
 
-void MAVLinkConsoleController::CommandHistory::append(const QString &command)
+void MavlinkConsoleController::CommandHistory::append(const QString &command)
 {
     if (!command.isEmpty()) {
         // do not append duplicates
@@ -314,7 +314,7 @@ void MAVLinkConsoleController::CommandHistory::append(const QString &command)
     _index = _history.length();
 }
 
-QString MAVLinkConsoleController::CommandHistory::up(const QString &current)
+QString MavlinkConsoleController::CommandHistory::up(const QString &current)
 {
     if (_index <= 0) {
         return current;
@@ -328,7 +328,7 @@ QString MAVLinkConsoleController::CommandHistory::up(const QString &current)
     return QStringLiteral("");
 }
 
-QString MAVLinkConsoleController::CommandHistory::down(const QString &current)
+QString MavlinkConsoleController::CommandHistory::down(const QString &current)
 {
     if (_index >= _history.length()) {
         return current;

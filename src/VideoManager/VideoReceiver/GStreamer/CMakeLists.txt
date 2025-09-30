@@ -1,13 +1,7 @@
 set(EXTRA_SOURCES)
 set(EXTRA_LIBRARIES)
-
 if (GST_FOUND)
     set(EXTRA_SOURCES
-    	gstqgc/gstqgc.cc
-        gstqgc/gstqgcelement.cc
-    	gstqgc/gstqgcelements.h
-    	gstqgc/gstqgcvideosinkbin.cc
-        gstqgc/gstqgcvideosinkbin.h
     	GStreamer.cc
     	GStreamer.h
         GStreamerHelpers.cc
@@ -15,9 +9,11 @@ if (GST_FOUND)
     	GstVideoReceiver.cc
     	GstVideoReceiver.h
         VideoItemStub.h
+        gstqgc.c
+        gstqgcvideosinkbin.c
     )
-   
-    set(EXTRA_LIBRARIES qmlglsink ${GST_LINK_LIBRARIES})
+
+        set(EXTRA_LIBRARIES qmlglsink ${GST_LINK_LIBRARIES})
 endif()
 
 add_library(GStreamer
@@ -29,8 +25,9 @@ target_link_libraries(GStreamer
         Qt5::Multimedia
         Qt5::OpenGL
         Qt5::Quick
-        ${EXTRA_LIBRARIES}
         Settings
+        qgc
+        ${EXTRA_LIBRARIES}
 )
 
 target_include_directories(GStreamer INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})

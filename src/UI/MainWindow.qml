@@ -7,20 +7,20 @@
  *
  ****************************************************************************/
 
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Dialogs
-import QtQuick.Layouts
-import QtQuick.Window
+import QtQuick 2.4         
+import QtQuick.Controls  2.4
+import QtQuick.Dialogs  1.3
+import QtQuick.Layouts  1.11
+import QtQuick.Window   2.11
 
-import QGroundControl
-
-import QGroundControl.Controls
-import QGroundControl.FactControls
-
-import QGroundControl.FlightDisplay
-import QGroundControl.FlightMap
-
+import QGroundControl 1.0              
+import QGroundControl.Palette       1.0
+import QGroundControl.ScreenTools     1.0
+import QGroundControl.FlightDisplay   1.0
+import QGroundControl.FlightMap       1.0
+import QGroundControl.FactControls    1.0
+import QGroundControl.Controls       1.0
+import QGroundControl.ScreenTools 1.0
 /// @brief Native QML top level window
 /// All properties defined here are visible to all QML pages.
 ApplicationWindow {
@@ -279,14 +279,14 @@ ApplicationWindow {
         id:                 showTouchAreasNotification
         title:              qsTr("Debug Touch Areas")
         text:               qsTr("Touch Area display toggled")
-        buttons:            MessageDialog.Ok
+        standardButtons:            MessageDialog.Ok
     }
 
     MessageDialog {
         id:                 advancedModeOnConfirmation
         title:              qsTr("Advanced Mode")
         text:               QGroundControl.corePlugin.showAdvancedUIMessage
-        buttons:            MessageDialog.Yes | MessageDialog.No
+        standardButtons:            MessageDialog.Yes | MessageDialog.No
         onButtonClicked: function (button, role) {
             if (button === MessageDialog.Yes) {
                 QGroundControl.corePlugin.showAdvancedUI = true
@@ -298,7 +298,7 @@ ApplicationWindow {
         id:                 advancedModeOffConfirmation
         title:              qsTr("Advanced Mode")
         text:               qsTr("Turn off Advanced Mode?")
-        buttons:            MessageDialog.Yes | MessageDialog.No
+        standardButtons:            MessageDialog.Yes | MessageDialog.No
         onButtonClicked: function (button, role) {
             if (button === MessageDialog.Yes) {
                 QGroundControl.corePlugin.showAdvancedUI = false

@@ -7,8 +7,8 @@
  *
  ****************************************************************************/
 
-import QGroundControl
-import QGroundControl.Controls
+import QGroundControl 1.0
+import QGroundControl.Controls  1.0
 
 ToolStripAction {
     text:           qsTr("Checklist")

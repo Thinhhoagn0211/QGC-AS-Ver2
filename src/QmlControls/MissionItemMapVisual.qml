@@ -7,15 +7,15 @@
  *
  ****************************************************************************/
 
-import QtQuick
-import QtQuick.Controls
-import QtLocation
-import QtPositioning
+import QtQuick 2.4
+import QtQuick.Controls 2.2
+import QtLocation 5.3
+import QtPositioning 5.3
 
-import QGroundControl
+import QGroundControl 1.0
 
 
-import QGroundControl.Controls
+import QGroundControl.Controls  1.0
 
 
 /// Mission item map visual

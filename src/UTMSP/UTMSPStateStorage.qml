@@ -1,5 +1,5 @@
 pragma Singleton
-import QtQuick
+import QtQuick 2.4
 
 QtObject {
     property bool loginState: true

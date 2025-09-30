@@ -7,14 +7,14 @@
  *
  ****************************************************************************/
 
-import QtQuick
-import QtQuick.Controls
-import QtQml.Models
+import QtQuick 2.4
+import QtQuick.Controls 2.2
+import QtQml.Models 2.1
 
-import QGroundControl
+import QGroundControl 1.0
 
-import QGroundControl.Controls
-import QGroundControl.FlightDisplay
+import QGroundControl.Controls  1.0
+import QGroundControl.FlightDisplay  1.0
 
 
 Item {

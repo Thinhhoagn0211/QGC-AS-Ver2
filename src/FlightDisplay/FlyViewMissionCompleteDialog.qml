@@ -7,15 +7,15 @@
  *
  ****************************************************************************/
 
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Dialogs
-import QtQuick.Layouts
+import QtQuick 2.4
+import QtQuick.Controls 2.2
+import QtQuick.Dialogs 1.2
+import QtQuick.Layouts 1.2
 
-import QGroundControl
-import QGroundControl.Controls
+import QGroundControl 1.0
+import QGroundControl.Controls  1.0
 
-
+import QGroundControl.ScreenTools 1.0
 
 /// Dialog which shows up when a flight completes. Prompts the user for things like whether they should remove the plan from the vehicle.
 Item {

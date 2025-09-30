@@ -6,13 +6,13 @@
  * COPYING.md in the root of the source code directory.
  *
  ****************************************************************************/
-import QtQuick
-import QtQuick.Dialogs
-import QtQuick.Layouts
+import QtQuick 2.4
+import QtQuick.Dialogs 1.2
+import QtQuick.Layouts 1.2
 
-import QGroundControl
+import QGroundControl 1.0
 
-import QGroundControl.Controls
+import QGroundControl.Controls  1.0
 
 
 FactTextField {

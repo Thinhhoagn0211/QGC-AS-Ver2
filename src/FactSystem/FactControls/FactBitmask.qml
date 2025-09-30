@@ -1,11 +1,12 @@
-import QtQuick
-import QtQuick.Controls
+import QtQuick 2.4
+import QtQuick.Controls 2.2
 
-import QGroundControl
+import QGroundControl 1.0
 
 
-import QGroundControl.Controls
-
+import QGroundControl.Controls  1.0
+import QGroundControl.FactSystem 1.0
+import QGroundControl.ScreenTools 1.0
 
 Flow {
     spacing: ScreenTools.defaultFontPixelWidth

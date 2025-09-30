@@ -7,9 +7,10 @@
  *
  ****************************************************************************/
 
-import QtQuick
-import QtQuick.Controls
+import QtQuick 2.4
+import QtQuick.Controls 2.2
 
+import QGroundControl.FlightDisplay 1.0
 FlightDisplayViewGStreamer {
     id: videoBackground
 }

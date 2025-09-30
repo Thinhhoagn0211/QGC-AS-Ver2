@@ -7,14 +7,15 @@
  *
  ****************************************************************************/
 
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
-import QtQuick.Dialogs
+import QtQuick 2.15
+import QtQuick.Controls 2.2
+import QtQuick.Layouts 1.2
+import QtQuick.Dialogs 1.2
 
-import QGroundControl
-import QGroundControl.Controls
-
+import QGroundControl 1.0
+import QGroundControl.Palette 1.0
+import QGroundControl.Controls  1.0
+import QGroundControl.ScreenTools 1.0
 
 
 
@@ -49,7 +50,7 @@ Rectangle {
         anchors.fill: viewButtonRow
         
         gradient: Gradient {
-            orientation: Gradient.Horizontal
+            // orientation: Gradient.Horizontal
             GradientStop { position: 0;                                     color: _mainStatusBGColor }
             GradientStop { position: currentButton.x + currentButton.width; color: _mainStatusBGColor }
             GradientStop { position: 1;                                     color: _root.color }

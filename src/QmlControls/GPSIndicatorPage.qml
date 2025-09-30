@@ -7,13 +7,13 @@
  *
  ****************************************************************************/
 
-import QtQuick
-import QtQuick.Layouts
+import QtQuick 2.4
+import QtQuick.Layouts 1.2
 
-import QGroundControl
-import QGroundControl.Controls
-import QGroundControl.FactControls
-
+import QGroundControl 1.0
+import QGroundControl.Controls  1.0
+import QGroundControl.FactControls  1.0
+import QGroundControl.ScreenTools 1.0
 // This indicator page is used both when showing RTK status only with no vehicle connect and when showing GPS/RTK status with a vehicle connected
 
 ToolIndicatorPage {

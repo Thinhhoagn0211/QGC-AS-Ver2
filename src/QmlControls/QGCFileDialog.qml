@@ -1,11 +1,13 @@
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Dialogs
-import QtQuick.Layouts
-import Qt.labs.platform as Labs
+import QtQuick 2.4
+import QtQuick.Controls 2.2
+import QtQuick.Dialogs 1.2
+import QtQuick.Layouts 1.2
+import Qt.labs.platform 1.1 as Labs
 
-import QGroundControl
-import QGroundControl.Controls
+import QGroundControl 1.0
+import QGroundControl.Palette 1.0
+import QGroundControl.ScreenTools 1.0
+import QGroundControl.Controls  1.0
 
 
 
@@ -93,7 +95,7 @@ Item {
 
     FileDialog {
         id:             fullFileDialog
-        currentFolder:  "file:///" + _root.folder
+        folder:  "file:///" + _root.folder
         nameFilters:    _root.nameFilters ? _root.nameFilters : []
         title:          _root.title
         defaultSuffix:  _root.defaultSuffix
@@ -111,7 +113,7 @@ Item {
 
     Labs.FolderDialog {
         id:             fullFolderDialog
-        currentFolder:  "file:///" + _root.folder
+        folder:  "file:///" + _root.folder
         title:          _root.title
 
         onAccepted: _root.acceptedForLoad(QGCFileDialogController.urlToLocalFile(folder))

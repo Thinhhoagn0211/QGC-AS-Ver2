@@ -167,6 +167,8 @@ public:
     /// Generally this is done during parsing. But if you know what you are doing, you can.
     void setEnumInfo(const QStringList &strings, const QVariantList &values);
 
+    static const char* _factSystemQmlUri;
+
 signals:
     void bitmaskStringsChanged();
     void bitmaskValuesChanged();

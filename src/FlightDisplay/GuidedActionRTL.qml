@@ -7,8 +7,8 @@
  *
  ****************************************************************************/
 
-import QGroundControl
-import QGroundControl.FlightDisplay
+import QGroundControl 1.0
+import QGroundControl.FlightDisplay  1.0
 
 GuidedToolStripAction {
     text:       _guidedController.rtlTitle

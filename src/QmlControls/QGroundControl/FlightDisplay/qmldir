@@ -39,3 +39,12 @@ ObstacleDistanceOverlayMap      1.0 ObstacleDistanceOverlayMap.qml
 ObstacleDistanceOverlayVideo    1.0 ObstacleDistanceOverlayVideo.qml
 GripperMenu                     1.0 GripperMenu.qml
 OnScreenGimbalController        1.0 OnScreenGimbalController.qml
+FlightDisplayViewGStreamer      1.0 FlightDisplayViewGStreamer.qml
+FlyViewTopRightPanel            1.0 FlyViewTopRightPanel.qml
+FlyViewBottomRightRowLayout     1.0 FlyViewBottomRightRowLayout.qml
+FlyViewTopRightColumnLayout     1.0 FlyViewTopRightColumnLayout.qml
+FlyViewAdditionalActionsButton 1.0 FlyViewAdditionalActionsButton.qml
+FlyViewAdditionalActionsList    1.0 FlyViewAdditionalActionsList.qml
+FlyViewAdditionalCustomActionsList    1.0 FlyViewAdditionalCustomActionsList.qml
+FlyViewAdditionalActionsPanel          1.0 FlyViewAdditionalActionsPanel.qml
+CustomGuidedActionsController           1.0 CustomGuidedActionsController.qml

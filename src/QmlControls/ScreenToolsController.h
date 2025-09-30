@@ -113,3 +113,4 @@ public:
     static QString fixedFontFamily();
     static QString normalFontFamily();
 };
+

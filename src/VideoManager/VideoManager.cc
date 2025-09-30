@@ -7,6 +7,12 @@
  *
  ****************************************************************************/
 
+#ifdef QGC_GST_STREAMING
+#   pragma message("✅ QGC_GST_STREAMING ENABLED in VideoManager")
+#else
+#   pragma message("❌ QGC_GST_STREAMING DISABLED in VideoManager")
+#endif
+
 #include "VideoManager.h"
 #include "AppSettings.h"
 #include "MavlinkCameraControl.h"
@@ -25,6 +31,8 @@
 #else
 #include "VideoItemStub.h"
 #endif
+
+#include "VideoItemStub.h"
 // #include "QtMultimediaReceiver.h"
 // #include "UVCReceiver.h"
 
@@ -54,13 +62,13 @@ VideoManager::VideoManager(QObject *parent)
     qCDebug(VideoManagerLog) << this;
 
     (void) qRegisterMetaType<VideoReceiver::STATUS>("STATUS");
-
+    (void) qmlRegisterType<VideoItemStub>("org.freedesktop.gstreamer.Qt6GLVideoItem", 1, 0, "GstGLQt6VideoItem");
 #ifdef QGC_GST_STREAMING
     if (!GStreamer::initialize()) {
         qCCritical(VideoManagerLog) << "Failed To Initialize GStreamer";
     }
 #else
-    (void) qmlRegisterType<VideoItemStub>("org.freedesktop.gstreamer.Qt6GLVideoItem", 1, 0, "GstGLQt6VideoItem");
+    // (void) qmlRegisterType<VideoItemStub>("org.freedesktop.gstreamer.Qt6GLVideoItem", 1, 0, "GstGLQt6VideoItem");
 #endif
 }
 

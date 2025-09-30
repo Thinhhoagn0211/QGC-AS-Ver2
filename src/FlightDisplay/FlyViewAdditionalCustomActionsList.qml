@@ -7,7 +7,7 @@
  *
  ****************************************************************************/
 
-import QtQuick
+import QtQuick 2.4
 
 // Custom builds can override this resource to add additional custom actions
 Item {

@@ -8,16 +8,16 @@
  ****************************************************************************/
 
 
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Dialogs
-import QtQuick.Layouts
+import QtQuick 2.4
+import QtQuick.Controls 2.2
+import QtQuick.Dialogs 1.2
+import QtQuick.Layouts 1.2
 
-import QGroundControl
-
-import QGroundControl.FactControls
-
-import QGroundControl.Controls
+import QGroundControl 1.0
+import QGroundControl.ScreenTools 1.0
+import QGroundControl.FactControls  1.0
+import QGroundControl.FactSystem 1.0
+import QGroundControl.Controls  1.0
 
 
 
@@ -446,7 +446,7 @@ Item {
                         MessageDialog {
                             id:         rebootDialog
                             visible:    false
-                            buttons:    MessageDialog.Yes | MessageDialog.No
+                            standardButtons: MessageDialog.Yes | MessageDialog.No
                             title:      qsTr("Reboot WiFi Bridge")
                             text:       qsTr("This will restart the WiFi Bridge so the settings you've changed can take effect. Note that you may have to change your computer WiFi settings and QGroundControl link settings to match these changes. Are you sure you want to restart it?")
                             onButtonClicked: function (button, role) {

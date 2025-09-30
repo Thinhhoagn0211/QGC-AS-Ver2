@@ -7,7 +7,7 @@
  *
  ****************************************************************************/
 
-import QtQml
+import QtQml 2.15
 
 QtObject {
     property var guidedController

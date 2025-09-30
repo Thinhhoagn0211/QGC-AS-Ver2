@@ -8,10 +8,10 @@
  ****************************************************************************/
 
 
-import QtQuick
+import QtQuick 2.4
 
-import QGroundControl
-import QGroundControl.Controls
+import QGroundControl 1.0
+import QGroundControl.Controls  1.0
 
 QGCLabel {
     anchors.fill:           parent

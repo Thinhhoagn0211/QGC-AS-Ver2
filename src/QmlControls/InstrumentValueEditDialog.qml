@@ -7,16 +7,16 @@
  *
  ****************************************************************************/
 
-import QtQuick
-import QtQuick.Dialogs
-import QtQuick.Layouts
-import QtQuick.Controls
+import QtQuick 2.4
+import QtQuick.Dialogs 1.3
+import QtQuick.Layouts 1.2
+import QtQuick.Controls 2.2
 
-import QGroundControl
-import QGroundControl.Controls
-
-
-import QGroundControl.FactControls
+import QGroundControl 1.0
+import QGroundControl.Controls  1.0
+import QGroundControl.ScreenTools 1.0
+import QGroundControl.Palette  1.0
+import QGroundControl.FactControls  1.0
 
 
 
@@ -278,8 +278,8 @@ QGCPopupDialog {
             ColorDialog {
                 id:             colorPickerDialog
                 modality:       Qt.ApplicationModal
-                selectedColor:  instrumentValueData.rangeColors.length ? instrumentValueData.rangeColors[colorIndex] : "white"
-                onAccepted:     updateColorValue(colorIndex, selectedColor)
+                color:  instrumentValueData.rangeColors.length ? instrumentValueData.rangeColors[colorIndex] : "white"
+                onAccepted:     updateColorValue(colorIndex, color)
 
                 property int colorIndex: 0
             }

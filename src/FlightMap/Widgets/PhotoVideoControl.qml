@@ -7,20 +7,20 @@
  *
  ****************************************************************************/
 
-import QtQuick
-import QtPositioning
-import QtQuick.Layouts
-import QtQuick.Controls
-import QtQuick.Dialogs
+import QtQuick 2.4
+import QtPositioning 5.3
+import QtQuick.Layouts 1.2
+import QtQuick.Controls 2.2
+import QtQuick.Dialogs 1.3
 
-import QGroundControl
+import QGroundControl 1.0
+import QGroundControl.Palette  1.0
+import QGroundControl.Controls  1.0
+import QGroundControl.ScreenTools 1.0
 
-import QGroundControl.Controls
 
 
-
-
-import QGroundControl.FactControls
+import QGroundControl.FactControls  1.0
 
 Rectangle {
     width:      mainLayout.width + (_margins * 2)
@@ -543,7 +543,7 @@ Rectangle {
                                 id:                 resetPrompt
                                 title:              qsTr("Reset Camera to Factory Settings")
                                 text:               qsTr("Confirm resetting all settings?")
-                                buttons:            MessageDialog.Yes | MessageDialog.No
+                                standardButtons:            MessageDialog.Yes | MessageDialog.No
 
                                 onButtonClicked: function (button, role) {
                                     switch (button) {
@@ -568,7 +568,7 @@ Rectangle {
                                 id:                 formatPrompt
                                 title:              qsTr("Format Camera Storage")
                                 text:               qsTr("Confirm erasing all files?")
-                                buttons:            MessageDialog.Yes | MessageDialog.No
+                                standardButtons:    MessageDialog.Yes | MessageDialog.No
 
                                 onButtonClicked: function (button, role) {
                                     switch (button) {

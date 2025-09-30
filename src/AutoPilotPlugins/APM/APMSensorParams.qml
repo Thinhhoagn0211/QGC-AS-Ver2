@@ -7,10 +7,10 @@
  *
  ****************************************************************************/
 
-import QtQuick
+import QtQuick 2.4
 
-import QGroundControl
-
+import QGroundControl 1.0
+import QGroundControl.FactSystem 1.0
 
 /// This is used to handle the various differences between firmware versions and missing parameters in each in a standard way.
 Item {
