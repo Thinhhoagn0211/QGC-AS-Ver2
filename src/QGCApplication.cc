@@ -37,7 +37,6 @@
 #include "ParameterManager.h"
 #include "PositionManager.h"
 #include "QGCCommandLineParser.h"
-#include "QGCCorePlugin.h"
 #include "QGCFileDownload.h"
 #include "QGCImageProvider.h"
 #include "QGCLoggingCategory.h"
@@ -82,7 +81,6 @@
 #include "FlightMapSettings.h"
 #include "FlightPathSegment.h"
 #include "PlanMasterController.h"
-#include "VideoManager.h"
 #include "VideoReceiver.h"
 #include "LogDownloadController.h"
 #if !defined(QGC_DISABLE_MAVLINK_INSPECTOR)
@@ -125,6 +123,7 @@
 #include "Vehicle/VehicleSetup/FirmwareUpgradeController.h"
 #include "MavlinkConsoleController.h"
 #include "MavlinkActionManager.h"
+#include "QGCVideoStreamInfo.h"
 #include "QGCOptions.h"
 #include "ADSBVehicleManager.h"
 #if defined(QGC_ENABLE_PAIRING)
@@ -154,10 +153,7 @@
 
 static QObject* qgroundcontrolQmlGlobalSingletonFactory(QQmlEngine* engine, QJSEngine* scriptEngine)
 {
-    Q_UNUSED(scriptEngine);
-
-    QGroundControlQmlGlobal* qmlGlobal = new QGroundControlQmlGlobal(engine);
-
+    QGroundControlQmlGlobal* qmlGlobal = new QGroundControlQmlGlobal;
     return qmlGlobal; 
 }
 
@@ -334,11 +330,17 @@ QGCApplication::~QGCApplication()
 
 }
 
-void QGCApplication::init()
-{   
+void QGCApplication::_registerQmlTypes()
+{
 
     qRegisterMetaType<QGCCorePlugin*>();
     qRegisterMetaType<VideoManager*>(); 
+    qRegisterMetaType<QGCOptions*>(); 
+    qRegisterMetaType<QmlObjectListModel*>();
+    qRegisterMetaType<ADSBVehicleManager*>();
+
+    qRegisterMetaType<const QGCOptions*>("const QGCOptions*");
+    qRegisterMetaType<const QmlObjectListModel*>("const QmlObjectListModel*");
 
     static const char* kRefOnly         = "Reference only";
     static const char* kQGroundControl  = "QGroundControl";
@@ -355,7 +357,7 @@ void QGCApplication::init()
     qmlRegisterUncreatableType<ParameterManager>        (kQGCVehicle,                       1, 0, "ParameterManager",           kRefOnly);
     qmlRegisterUncreatableType<VehicleObjectAvoidance>  (kQGCVehicle,                       1, 0, "VehicleObjectAvoidance",     kRefOnly);
     qmlRegisterUncreatableType<QGCCameraManager>        (kQGCVehicle,                       1, 0, "QGCCameraManager",           kRefOnly);
-    // qmlRegisterUncreatableType<QGCVideoStreamInfo>      (kQGCVehicle,                       1, 0, "QGCVideoStreamInfo",         kRefOnly);
+    qmlRegisterUncreatableType<QGCVideoStreamInfo>      (kQGCVehicle,                       1, 0, "QGCVideoStreamInfo",         kRefOnly);
     qmlRegisterUncreatableType<LinkInterface>           (kQGCVehicle,                       1, 0, "LinkInterface",              kRefOnly);
     qmlRegisterUncreatableType<VehicleLinkManager>      (kQGCVehicle,                       1, 0, "VehicleLinkManager",         kRefOnly);
     qmlRegisterUncreatableType<Autotune>                (kQGCVehicle,                       1, 0, "Autotune",                   kRefOnly);
@@ -439,7 +441,9 @@ void QGCApplication::init()
         "MAVLink", 1, 0, "MAVLink",
         mavlinkSingletonFactory);
 
-
+}
+void QGCApplication::init()
+{   
 
     SettingsManager::instance()->init();
     if (_systemId > 0) {
@@ -489,6 +493,7 @@ void QGCApplication::_initForNormalAppBoot()
 {
     _initVideo(); // GStreamer must be initialized before QmlEngine
 
+    _registerQmlTypes();
     QQuickStyle::setStyle("Basic");
     QGCCorePlugin::instance()->init();
     MAVLinkProtocol::instance()->init();

@@ -142,7 +142,7 @@ private:
 
     QObject *_rootQmlObject();
     void _checkForNewVersion();
-
+    void _registerQmlTypes();
     bool _runningUnitTests = false;
     bool _simpleBootTest = false;
     bool _fakeMobile = false;    ///< true: Fake ui into displaying mobile interface
