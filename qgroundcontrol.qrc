@@ -24,6 +24,7 @@
     <qresource prefix="/qml">
         <file alias="QGroundControl/Controls/HeightIndicator.qml">src/QmlControls/HeightIndicator.qml</file>
         <file alias="QGroundControl/Controls/MvPanelPage.qml">src/QmlControls/MvPanelPage.qml</file>
+        <file alias="QGroundControl/Controls/QGCFlickableScrollIndicator.qml">src/QmlControls/QGCFlickableScrollIndicator.qml</file>
         <file alias="QGroundControl/Controls/QGCPageIndicator.qml">src/QmlControls/QGCPageIndicator.qml</file>
         <file alias="QGroundControl/Controls/QGCSwipeView.qml">src/QmlControls/QGCSwipeView.qml</file>
         <file alias="QGroundControl/Controls/HeightIndicator.qml">src/QmlControls/HeightIndicator.qml</file>
@@ -50,8 +51,8 @@
         <file alias="ESP8266Component.qml">src/AutoPilotPlugins/Common/ESP8266Component.qml</file>
         <file alias="ESP8266ComponentSummary.qml">src/AutoPilotPlugins/Common/ESP8266ComponentSummary.qml</file>
         <file alias="FirmwareUpgrade.qml">src/Vehicle/VehicleSetup/FirmwareUpgrade.qml</file>
-        <file alias="FlightDisplayViewDummy.qml">src/FlightDisplay/FlightDisplayViewDummy.qml</file>
-        <file alias="FlightDisplayViewUVC.qml">src/FlightDisplay/FlightDisplayViewUVC.qml</file>
+        <file alias="QGroundControl/FlightDisplay/FlightDisplayViewDummy.qml">src/FlightDisplay/FlightDisplayViewDummy.qml</file>
+        <file alias="QGroundControl/FlightDisplay/FlightDisplayViewUVC.qml">src/FlightDisplay/FlightDisplayViewUVC.qml</file>
         <file alias="FWLandingPatternEditor.qml">src/QmlControls/FWLandingPatternEditor.qml</file>
         <file alias="GeneralSettings.qml">src/UI/AppSettings/GeneralSettings.qml</file>
         <file alias="GeoTagPage.qml">src/AnalyzeView/GeoTagPage.qml</file>
@@ -184,6 +185,7 @@
         <file alias="QGroundControl/Controls/TransectStyleComplexItemTerrainFollow.qml">src/QmlControls/TransectStyleComplexItemTerrainFollow.qml</file>
         <file alias="QGroundControl/Controls/VehicleRotationCal.qml">src/QmlControls/VehicleRotationCal.qml</file>
         <file alias="QGroundControl/Controls/VehicleSummaryRow.qml">src/QmlControls/VehicleSummaryRow.qml</file>
+        <file alias="QGroundControl/Controls/GPSIndicator.qml">src/QmlControls/GPSIndicator.qml</file>
         <file alias="QGroundControl/Controls/LabelledComboBox.qml">src/QmlControls/LabelledComboBox.qml</file>
         <file alias="QGroundControl/Controls/ToolIndicatorPage.qml">src/QmlControls/ToolIndicatorPage.qml</file>
         <file alias="QGroundControl/Controls/VTOLLandingPatternMapVisual.qml">src/QmlControls/VTOLLandingPatternMapVisual.qml</file>
@@ -297,6 +299,9 @@
         <file alias="QGroundControl/UTMSP/UTMSPNotificationSlider.qml">src/UTMSP/UTMSPNotificationSlider.qml</file>
         <file alias="QGroundControl/UTMSP/UTMSPStateStorage.qml">src/UTMSP/UTMSPStateStorage.qml</file>
         <file alias="QGroundControl/UTMSP/qmldir">src/QmlControls/QGroundControl/UTMSP/qmldir</file>
+        <file alias="QGroundControl/Toolbar/RTKGPSIndicator.qml">src/UI/toolbar/RTKGPSIndicator.qml</file>
+        <file alias="QGroundControl/Toolbar/qmldir">src/QmlControls/QGroundControl/Toolbar/qmldir</file>
+        
 
     </qresource>
     <qresource prefix="/FirstRunPromptDialogs">

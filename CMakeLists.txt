@@ -178,6 +178,7 @@ set(QGC_RESOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/FirmwarePlugin/APM/APMResources.qrc
 	${CMAKE_CURRENT_SOURCE_DIR}/src/FirmwarePlugin/PX4/PX4Resources.qrc
 	${CMAKE_CURRENT_SOURCE_DIR}/VideoReceiverApp/qml.qrc
+	${CMAKE_CURRENT_SOURCE_DIR}/src/UTMSP/UTMSP.qrc
 	)
 
 if (WIN32)

@@ -25,7 +25,7 @@ ToolStripActionList {
             id: view3DIcon
             visible: _viewer3DEnabled
             text:           qsTr("3D View")
-            iconSource:     "/qml/QGroundControl/Viewer3D/City3DMapIcon.svg"
+            iconSource:     "/viewer3d/city_3d_map_icon.svg"
             onTriggered:{
                 if(_is3DViewOpen === false){
                     viewer3DWindow.open()
@@ -39,7 +39,7 @@ ToolStripActionList {
                     view3DIcon.iconSource =     "/qmlimages/PaperPlane.svg"
                     text=           qsTr("Fly")
                 }else{
-                    iconSource =     "/qml/QGroundControl/Viewer3D/City3DMapIcon.svg"
+                    iconSource =     "/viewer3d/city_3d_map_icon.svg"
                     text =           qsTr("3D View")
                 }
             }

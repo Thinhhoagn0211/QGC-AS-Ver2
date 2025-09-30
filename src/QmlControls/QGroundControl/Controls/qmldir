@@ -130,3 +130,5 @@ SelectableControl                     1.0 SelectableControl.qml
 ToolStripDropPanel                     1.0 ToolStripDropPanel.qml
 PlanViewToolBar                    1.0 PlanViewToolBar.qml
 PlanToolBarIndicators           1.0 PlanToolBarIndicators.qml
+QGCFlickableScrollIndicator    1.0 QGCFlickableScrollIndicator.qml
+GPSIndicator                   1.0 GPSIndicator.qml

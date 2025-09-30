@@ -1,0 +1,3 @@
+module QGroundControl.Toolbar
+
+RTKGPSIndicator                  1.0 RTKGPSIndicator.qml

@@ -202,7 +202,7 @@ QGCFlickable {
                         Image {
                             width:  ScreenTools.defaultFontPixelWidth * 5
                             height: ScreenTools.defaultFontPixelHeight * 1.667
-                            source: UTMSPStateStorage.loginState? "qrc:/qml/QGroundControl/UTMSP/images/red.png" : "qrc:/qml/QGroundControl/UTMSP/images/green.png"
+                            source: UTMSPStateStorage.loginState? "qrc:/UTMSP/red.png" : "qrc:/UTMSP/green.png"
                             PropertyAnimation on opacity {
                                 easing.type:    Easing.OutQuart
                                 from:           0.5
@@ -281,7 +281,7 @@ QGCFlickable {
                                 id:      loading
                                 width:   ScreenTools.defaultFontPixelWidth * 4.5
                                 height:  ScreenTools.defaultFontPixelHeight * 1.5
-                                source:  "qrc:/qml/QGroundControl/UTMSP/images/load.gif"
+                                source:  "qrc:/UTMSP/load.gif"
                                 visible: false
                             }
                             onClicked:{
@@ -624,7 +624,7 @@ QGCFlickable {
                         Image {
                             width:                          ScreenTools.defaultFontPixelWidth * 5
                             height:                         ScreenTools.defaultFontPixelHeight * 1.667
-                            source:                         "qrc:/qml/QGroundControl/UTMSP/images/date.svg"
+                            source:                         "qrc:/UTMSP/date.svg"
                             anchors.horizontalCenter:       dateButton.horizontalCenter
                             anchors.verticalCenter:         dateButton.verticalCenter
                             anchors.horizontalCenterOffset: -40
@@ -639,7 +639,7 @@ QGCFlickable {
                         Image {
                             width:                          ScreenTools.defaultFontPixelWidth * 5
                             height:                         ScreenTools.defaultFontPixelHeight * 1.667
-                            source:                         "qrc:/qml/QGroundControl/UTMSP/images/time.svg"
+                            source:                         "qrc:/UTMSP/time.svg"
                             anchors.horizontalCenter:       timeButton.horizontalCenter
                             anchors.verticalCenter:         timeButton.verticalCenter
                             anchors.horizontalCenterOffset: -40
