@@ -19,6 +19,10 @@ add_library(QtLocationPlugin
     QGeoFileTileCacheQGC.h
     QGeoMapReplyQGC.cpp
     QGeoMapReplyQGC.h
+    QGeoCodeReplyQGC.cpp
+    QGeoCodeReplyQGC.h
+	QGeoCodingManagerEngineQGC.cpp
+    QGeoCodingManagerEngineQGC.h
     QGeoServiceProviderPluginQGC.cpp
     QGeoServiceProviderPluginQGC.h
     QGeoTiledMappingManagerEngineQGC.cpp

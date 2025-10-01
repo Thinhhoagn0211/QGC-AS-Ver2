@@ -58,7 +58,32 @@ DECLARE_SETTINGGROUP(Video, "Video")
 
     _nameToMetaDataMap[videoSourceName]->setEnumInfo(videoSourceCookedList, videoSourceList);
 
-    _setForceVideoDecodeList();
+
+    const QVariantList removeForceVideoDecodeList{
+#ifdef Q_OS_LINUX
+        VideoDecoderOptions::ForceVideoDecoderDirectX3D,
+        VideoDecoderOptions::ForceVideoDecoderVideoToolbox,
+#endif
+#ifdef Q_OS_WIN
+        VideoDecoderOptions::ForceVideoDecoderVAAPI,
+        VideoDecoderOptions::ForceVideoDecoderVideoToolbox,
+#endif
+#ifdef Q_OS_MAC
+        VideoDecoderOptions::ForceVideoDecoderDirectX3D,
+        VideoDecoderOptions::ForceVideoDecoderVAAPI,
+#endif
+#ifdef Q_OS_ANDROID
+        VideoDecoderOptions::ForceVideoDecoderDirectX3D,
+        VideoDecoderOptions::ForceVideoDecoderVideoToolbox,
+        VideoDecoderOptions::ForceVideoDecoderVAAPI,
+        VideoDecoderOptions::ForceVideoDecoderNVIDIA,
+#endif
+    };
+
+    for(const auto& value : removeForceVideoDecodeList) {
+        _nameToMetaDataMap[forceVideoDecoderName]->removeEnumInfo(value);
+    }
+
 
     // Set default value for videoSource
     _setDefaults();
@@ -235,37 +260,4 @@ bool VideoSettings::streamConfigured(void)
 void VideoSettings::_configChanged(QVariant)
 {
     emit streamConfiguredChanged(streamConfigured());
-}
-
-void VideoSettings::_setForceVideoDecodeList()
-{
-#ifdef QGC_GST_STREAMING
-    static const QList<GStreamer::VideoDecoderOptions> removeForceVideoDecodeList{
-#if defined(Q_OS_ANDROID)
-    GStreamer::VideoDecoderOptions::ForceVideoDecoderDirectX3D,
-    GStreamer::VideoDecoderOptions::ForceVideoDecoderVideoToolbox,
-    GStreamer::VideoDecoderOptions::ForceVideoDecoderVAAPI,
-    GStreamer::VideoDecoderOptions::ForceVideoDecoderNVIDIA,
-    GStreamer::VideoDecoderOptions::ForceVideoDecoderIntel,
-#elif defined(Q_OS_LINUX)
-    GStreamer::VideoDecoderOptions::ForceVideoDecoderDirectX3D,
-    GStreamer::VideoDecoderOptions::ForceVideoDecoderVideoToolbox,
-#elif defined(Q_OS_WIN)
-    GStreamer::VideoDecoderOptions::ForceVideoDecoderVideoToolbox,
-    GStreamer::VideoDecoderOptions::ForceVideoDecoderVulkan,
-#elif defined(Q_OS_MACOS)
-    GStreamer::VideoDecoderOptions::ForceVideoDecoderDirectX3D,
-    GStreamer::VideoDecoderOptions::ForceVideoDecoderVAAPI,
-#elif defined(Q_OS_IOS)
-    GStreamer::VideoDecoderOptions::ForceVideoDecoderDirectX3D,
-    GStreamer::VideoDecoderOptions::ForceVideoDecoderVAAPI,
-    GStreamer::VideoDecoderOptions::ForceVideoDecoderNVIDIA,
-    GStreamer::VideoDecoderOptions::ForceVideoDecoderIntel,
-#endif
-    };
-
-    for (const auto &value : removeForceVideoDecodeList) {
-        _nameToMetaDataMap[forceVideoDecoderName]->removeEnumInfo(value);
-    }
-#endif
 }

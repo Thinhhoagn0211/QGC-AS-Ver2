@@ -10,7 +10,10 @@
 import QtQuick 2.4
 import QtQuick.Controls 2.2
 
-import QGroundControl.FlightDisplay 1.0
-FlightDisplayViewGStreamer {
+import org.freedesktop.gstreamer.GLVideoItem    1.0
+
+GstGLVideoItem {
     id: videoBackground
+    property var receiver
 }
+

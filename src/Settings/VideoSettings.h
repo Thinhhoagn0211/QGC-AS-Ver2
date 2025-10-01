@@ -39,6 +39,16 @@ public:
     DEFINE_SETTINGFACT(lowLatencyMode)
     DEFINE_SETTINGFACT(forceVideoDecoder)
 
+    enum VideoDecoderOptions {
+        ForceVideoDecoderDefault = 0,
+        ForceVideoDecoderSoftware,
+        ForceVideoDecoderNVIDIA,
+        ForceVideoDecoderVAAPI,
+        ForceVideoDecoderDirectX3D,
+        ForceVideoDecoderVideoToolbox,
+    };
+    Q_ENUM(VideoDecoderOptions)
+
     Q_PROPERTY(bool     streamConfigured        READ streamConfigured       NOTIFY streamConfiguredChanged)
     Q_PROPERTY(QString  rtspVideoSource         READ rtspVideoSource        CONSTANT)
     Q_PROPERTY(QString  udp264VideoSource       READ udp264VideoSource      CONSTANT)
@@ -76,7 +86,6 @@ private slots:
 
 private:
     void _setDefaults               ();
-    void _setForceVideoDecodeList();
 
 private:
     bool _noVideo = false;

@@ -1,17 +1,3 @@
-/****************************************************************************
- *
- * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
- *
- * QGroundControl is licensed according to the terms in the file
- * COPYING.md in the root of the source code directory.
- *
- ****************************************************************************/
-
-#ifdef QGC_GST_STREAMING
-#   pragma message("✅ QGC_GST_STREAMING ENABLED in VideoManager")
-#else
-#   pragma message("❌ QGC_GST_STREAMING DISABLED in VideoManager")
-#endif
 
 #include "VideoManager.h"
 #include "AppSettings.h"
@@ -26,23 +12,24 @@
 #include "Vehicle.h"
 #include "VideoReceiver.h"
 #include "VideoSettings.h"
-#ifdef QGC_GST_STREAMING
-#include "GStreamer.h"
-#else
-#include "VideoItemStub.h"
+
+#ifndef QGC_DISABLE_UVC
+#include <QCameraInfo>
 #endif
 
-#include "VideoItemStub.h"
-// #include "QtMultimediaReceiver.h"
-// #include "UVCReceiver.h"
+#if defined(QGC_GST_STREAMING)
+#include "GStreamer.h"
+#include "VideoSettings.h"
+#else
+#include "GLVideoItemStub.h"
+#endif
 
-#include <QtCore/qmath.h>
 #include <QtCore/QDir>
 #include <QtQml/QQmlEngine>
 #include <QtQuick/QQuickItem>
 #include <QtQuick/QQuickWindow>
 #include <QtCore/QTimer>
-
+#include <cmath>
 QGC_LOGGING_CATEGORY(VideoManagerLog, "qgc.videomanager.videomanager")
 
 static constexpr const char *kFileExtension[VideoReceiver::FILE_FORMAT_MAX + 1] = {
@@ -51,24 +38,19 @@ static constexpr const char *kFileExtension[VideoReceiver::FILE_FORMAT_MAX + 1] 
     "mp4"
 };
 
-// Q_APPLICATION_STATIC(VideoManager, _videoManagerInstance);
-Q_GLOBAL_STATIC(VideoManager, _videoManagerInstance);
+Q_GLOBAL_STATIC(VideoManager, _videoManagerInstance)
 
 VideoManager::VideoManager(QObject *parent)
     : QObject(parent)
     , _subtitleWriter(new SubtitleWriter(this))
     , _videoSettings(SettingsManager::instance()->videoSettings())
 {
-    qCDebug(VideoManagerLog) << this;
-
-    (void) qRegisterMetaType<VideoReceiver::STATUS>("STATUS");
-    (void) qmlRegisterType<VideoItemStub>("org.freedesktop.gstreamer.Qt6GLVideoItem", 1, 0, "GstGLQt6VideoItem");
-#ifdef QGC_GST_STREAMING
-    if (!GStreamer::initialize()) {
-        qCCritical(VideoManagerLog) << "Failed To Initialize GStreamer";
+#if !defined(QGC_GST_STREAMING)
+    static bool once = false;
+    if (!once) {
+        qmlRegisterType<GLVideoItemStub>("org.freedesktop.gstreamer.GLVideoItem", 1, 0, "GstGLVideoItem");
+        once = true;
     }
-#else
-    // (void) qmlRegisterType<VideoItemStub>("org.freedesktop.gstreamer.Qt6GLVideoItem", 1, 0, "GstGLQt6VideoItem");
 #endif
 }
 
@@ -157,7 +139,7 @@ void VideoManager::_cleanupOldVideos()
         total += video.size();
     }
 
-    const uint64_t maxSize = SettingsManager::instance()->videoSettings()->maxVideoSize()->rawValue().toUInt() * qPow(1024, 2);
+    const uint64_t maxSize = SettingsManager::instance()->videoSettings()->maxVideoSize()->rawValue().toUInt() * std::pow(1024, 2);
     while ((total >= maxSize) && !vidList.isEmpty()) {
         const QFileInfo info = vidList.takeLast();
         total -= info.size();
@@ -291,7 +273,7 @@ bool VideoManager::hasVideo() const
 
 bool VideoManager::isUvc() const
 {
-    return (!_uvcVideoSourceID.isEmpty() && hasVideo());
+    return (!_uvcVideoSourceID.isEmpty()  && hasVideo());
 }
 
 bool VideoManager::gstreamerEnabled()
@@ -302,16 +284,6 @@ bool VideoManager::gstreamerEnabled()
     return false;
 #endif
 }
-
-// bool VideoManager::uvcEnabled()
-// {
-//     return UVCReceiver::enabled();
-// }
-
-// bool VideoManager::qtmultimediaEnabled()
-// {
-//     return QtMultimediaReceiver::enabled();
-// }
 
 void VideoManager::setfullScreen(bool on)
 {
@@ -392,15 +364,9 @@ bool VideoManager::_updateUVC(VideoReceiver *receiver)
     if (!hasVideo() || isStreamSource()) {
         _uvcVideoSourceID = QString();
     }
-    // } else {
-    //     _uvcVideoSourceID = UVCReceiver::getSourceId();
-    // }
-
     if (oldUvcVideoSrcID != _uvcVideoSourceID) {
         qCDebug(VideoManagerLog) << "UVC changed from [" << oldUvcVideoSrcID << "] to [" << _uvcVideoSourceID << "]";
-        // if (!_uvcVideoSourceID.isEmpty()) {
-        //     UVCReceiver::checkPermission();
-        // }
+
         result = true;
         emit uvcVideoSourceIDChanged();
         emit isUvcChanged();

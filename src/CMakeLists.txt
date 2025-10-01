@@ -51,17 +51,18 @@ add_subdirectory(UI)
 add_subdirectory(Utilities)
 add_subdirectory(Vehicle)
 add_subdirectory(VideoManager)
+add_subdirectory(VideoReceiver)
 
 target_link_libraries(qgc
 	PRIVATE
 		shp
 		Qt5::QuickControls2
-
+	
 	PUBLIC
 		Qt5::Quick
 		Qt5::QuickWidgets
 		Qt5::Widgets
-
+		Qt5::Location
 		ADSB
 		AnalyzeView
 		# Android
@@ -96,8 +97,6 @@ target_link_libraries(qgc
         Vehicle
 		VehicleSetup
         VideoManager
-		VideoReceiver
-		GStreamer
 		Audio
 		Actuators
 		Compression

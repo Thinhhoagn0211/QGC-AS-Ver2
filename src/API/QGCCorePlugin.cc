@@ -283,7 +283,7 @@ VideoReceiver *QGCCorePlugin::createVideoReceiver(QObject *parent)
 void *QGCCorePlugin::createVideoSink(QQuickItem *widget, QObject *parent)
 {
 #ifdef QGC_GST_STREAMING
-    return GStreamer::createVideoSink(widget, parent);
+    return GStreamer::createVideoSink(parent, widget);
 // #elif defined(QGC_QT_STREAMING)
 //     return QtMultimediaReceiver::createVideoSink(widget, parent);
 #else

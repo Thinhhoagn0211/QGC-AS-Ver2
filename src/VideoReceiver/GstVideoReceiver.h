@@ -1,11 +1,17 @@
 /****************************************************************************
  *
- * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
+ * (c) 2009-2020 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
  *
  * QGroundControl is licensed according to the terms in the file
  * COPYING.md in the root of the source code directory.
  *
  ****************************************************************************/
+
+/**
+ * @file
+ *   @brief QGC Video Receiver
+ *   @author Gus Grubba <gus@auterion.com>
+ */
 
 #pragma once
 
@@ -15,24 +21,12 @@
 #include <QtCore/QThread>
 #include <QtCore/QTimer>
 #include <QtCore/QWaitCondition>
-#include <queue>
-#include <mutex>
-#include <thread>
+
 #include <glib.h>
 #include <gst/gstelement.h>
 #include <gst/gstpad.h>
 
-#include <opencv2/opencv.hpp>
-#include <opencv2/dnn.hpp>
-
-#include <gst/gst.h>
-
 #include "VideoReceiver.h"
-
-using namespace cv;
-using namespace dnn;
-using namespace std;
-
 
 Q_DECLARE_LOGGING_CATEGORY(GstVideoReceiverLog)
 
@@ -134,17 +128,4 @@ private:
         "qtmux",
         "mp4mux"
     };
-
-    queue<cv::Mat> _frameQueue;
-    mutex _queueMutex;
-    condition_variable _queueCond;
-    std::thread _yoloThread;
-    bool _yoloThreadRunning = false;
-    vector<cv::Rect> _lastBoxes;
-    mutex _detMutex;
-    Net _yoloNet;
-    vector<string> class_list;
-    vector<std::string> _classNames;
-    bool _yoloLoaded = false;
-    void runYolo(cv::Mat& frame, int frameId);
 };

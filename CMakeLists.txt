@@ -91,7 +91,6 @@ set(GST_DEPENDENCIES
 	gstreamer-1.0>=1.14
 	gstreamer-video-1.0>=1.14
 	gstreamer-gl-1.0>=1.14
-	gstreamer-rtsp-1.0>=1.14
 	)
 
 if (MSVC)
@@ -106,10 +105,16 @@ else()
 endif()
 
 if (GST_FOUND)
-    message(STATUS "✅ GStreamer FOUND, enabling QGC_GST_STREAMING")
-    add_definitions(-DQGC_GST_STREAMING)
+    add_definitions(
+        -DQGC_GST_STREAMING
+    )
+
+    option(QGC_GST_MICROHARD_ENABLED "Enable microhard" OFF)
+    option(QGC_GST_TAISYNC_ENABLED "Enable taisyng" OFF)
 else()
-    message(STATUS "❌ GStreamer NOT found, disabling QGC_GST_STREAMING")
+	if (QGC_GST_MICROHARD_ENABLED OR QGC_GST_TAISYNC_ENABLED)
+		message(FATAL_ERROR "You tried to enable Microhard or Taisync but gstreamer is not found. Make sure to set PKG_CONFIG_EXECUTABLE and/or PKG_CONFIG_PATH properly.")
+	endif()
 endif()
 
 #=============================================================================
@@ -140,13 +145,6 @@ find_package(Qt5 ${QT_VERSION}
 		${QT_LIBRARY_HINTS}
 )
 
-find_package(OpenCV REQUIRED)
-
-if(OpenCV_FOUND)
-    include_directories(${OpenCV_INCLUDE_DIRS})
-
-endif()
-
 if(NOT QT_MKSPEC MATCHES "winrt")
 	find_package(Qt5 ${QT_VERSION}
 		COMPONENTS
@@ -164,8 +162,6 @@ include_directories(
 	libs/eigen
 
 	libs/libevents
-	libs/libevents/libs/cpp
-
 
 	libs/mavlink/include/mavlink/v2.0
 	libs/mavlink/include/mavlink/v2.0/all
@@ -191,8 +187,9 @@ if (WIN32)
 	# append application icon resource for Windows
 	set(QGC_RESOURCES
 		${QGC_RESOURCES}
-		${CMAKE_CURRENT_SOURCE_DIR}/deploy/windows/QGroundControl.rc)
+		${CMAKE_CURRENT_SOURCE_DIR}/windows/QGroundControl.rc)
 endif()
+
 
 if(ANDROID)
 	add_library(QGroundControl SHARED ${QGC_RESOURCES})
@@ -200,11 +197,7 @@ else()
 	add_executable(QGroundControl ${QGC_RESOURCES})
 endif()
 
-target_link_libraries(QGroundControl PUBLIC qgc)
-
-if(OpenCV_FOUND)
-    target_link_libraries(QGroundControl PUBLIC ${OpenCV_LIBS})
-endif()
+target_link_libraries(QGroundControl PRIVATE qgc)
 
 # Files/directories to install
 install(

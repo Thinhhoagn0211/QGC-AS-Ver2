@@ -382,6 +382,7 @@ Item {
             id:         videoControl
             pipView:    _pipView
         }
+    // }
 
         PipView {
             id:                     _pipView
@@ -398,6 +399,7 @@ Item {
             property real leftEdgeBottomInset: visible ? width + anchors.margins : 0
             property real bottomEdgeLeftInset: visible ? height + anchors.margins : 0
         }
+    
 
         FlyViewWidgetLayer {
             id:                     widgetLayer
@@ -520,6 +522,5 @@ Item {
             close()
         }
     }
-
 }
 

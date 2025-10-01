@@ -9,11 +9,25 @@
 
 #include <QtQuick/QQuickWindow>
 #include <QtWidgets/QApplication>
-
+#include <QtPlugin>
 #include "QGCApplication.h"
 #include "QGCCommandLineParser.h"
 #include "QGCLogging.h"
 #include "Platform.h"
+
+#include <iostream>
+#include <QtGlobal>
+#include <QApplication>
+#include <QIcon>
+#include <QSslSocket>
+#include <QMessageBox>
+#include <QProcessEnvironment>
+#include <QHostAddress>
+#include <QUdpSocket>
+#include <QtPlugin>
+#include <QStringListModel>
+#include <QQuickStyle>
+#include <QQuickWindow>
 
 #if !defined(Q_OS_ANDROID) && !defined(Q_OS_IOS)
     #include <QtWidgets/QMessageBox>
@@ -44,6 +58,7 @@ int main(int argc, char *argv[])
     }
 #endif
 
+
     QGCCommandLineParser::CommandLineParseResult args;
     {
         const QCoreApplication pre(argc, argv);
@@ -72,7 +87,7 @@ int main(int argc, char *argv[])
         }
     }
 #endif
-
+    
     // Early platform setup before Qt app construction
     Platform::setupPreApp(args);
 
@@ -83,6 +98,7 @@ int main(int argc, char *argv[])
     // Late platform setup after app and logging exist
     Platform::setupPostApp();
 
+    Q_IMPORT_PLUGIN(QGeoServiceProviderFactoryQGC)
     app.init();
 
     int exitCode = 0;

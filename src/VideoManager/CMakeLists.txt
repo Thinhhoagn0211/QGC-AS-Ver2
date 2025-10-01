@@ -1,4 +1,6 @@
 add_library(VideoManager
+    GLVideoItemStub.cc
+    GLVideoItemStub.h
     SubtitleWriter.cc
     SubtitleWriter.h
     VideoManager.cc
@@ -6,15 +8,11 @@ add_library(VideoManager
 )
 
 target_link_libraries(VideoManager
-	PUBLIC
-		Qt5::Core
-		Qt5::Network
+    PUBLIC
+        qgc
         Qt5::Multimedia
         Qt5::OpenGL
         VideoReceiver
-		qgc
 )
 
 target_include_directories(VideoManager INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
-
-add_subdirectory(VideoReceiver)

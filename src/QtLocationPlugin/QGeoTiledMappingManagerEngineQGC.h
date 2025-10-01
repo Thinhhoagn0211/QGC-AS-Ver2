@@ -9,27 +9,27 @@
 
 #pragma once
 
-#include <QtCore/QLoggingCategory>
 #include <QtLocation/QGeoServiceProvider>
+#include <QtLocation/private/qgeotiledmap_p.h>
 #include <QtLocation/private/qgeotiledmappingmanagerengine_p.h>
 
-Q_DECLARE_LOGGING_CATEGORY(QGeoTiledMappingManagerEngineQGCLog)
+class QGeoTiledMapQGC : public QGeoTiledMap
+{
+    Q_OBJECT
+public:
+    QGeoTiledMapQGC(QGeoTiledMappingManagerEngine *engine, QObject *parent = 0);
+};
 
-class QNetworkAccessManager;
+class QGeoTileFetcherQGC;
 
 class QGeoTiledMappingManagerEngineQGC : public QGeoTiledMappingManagerEngine
 {
     Q_OBJECT
-
 public:
-    QGeoTiledMappingManagerEngineQGC(const QVariantMap &parameters, QGeoServiceProvider::Error *error, QString *errorString, QNetworkAccessManager *networkManager = nullptr, QObject *parent = nullptr);
+    QGeoTiledMappingManagerEngineQGC(const QVariantMap &parameters, QGeoServiceProvider::Error *error, QString *errorString);
     ~QGeoTiledMappingManagerEngineQGC();
-
-    QGeoMap* createMap() final;
-    QNetworkAccessManager *networkManager() const { return m_networkManager; }
+    QGeoMap *createMap();
 
 private:
-    QNetworkAccessManager *m_networkManager = nullptr;
-
-    static constexpr int kTileVersion = 1;
+    void _setCache(const QVariantMap &parameters);
 };

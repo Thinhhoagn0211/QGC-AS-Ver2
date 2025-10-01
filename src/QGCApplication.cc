@@ -50,6 +50,7 @@
 #include "QGroundControlQmlGlobal.h"
 #include "QGCPalette.h"
 #include "QGCFileDialogController.h"
+#include "GStreamer.h"
 #ifndef QGC_NO_SERIAL_LINK
 #include "SerialLink.h"
 #endif
@@ -284,6 +285,27 @@ QGCApplication::QGCApplication(int &argc, char *argv[], const QGCCommandLinePars
     // Set up our logging filters
     QGCLoggingCategoryRegister::instance()->setFilterRulesFromSettings(loggingOptions);
 
+    // Initialize Bluetooth
+#ifdef QGC_ENABLE_BLUETOOTH
+    QBluetoothLocalDevice localDevice;
+    if (localDevice.isValid())
+    {
+        _bluetoothAvailable = true;
+    }
+#endif
+
+    // Gstreamer debug settings
+    int gstDebugLevel = 0;
+    if (settings.contains(AppSettings::gstDebugLevelName)) {
+        gstDebugLevel = settings.value(AppSettings::gstDebugLevelName).toInt();
+    }
+
+#if defined(QGC_GST_STREAMING)
+    // Initialize Video Receiver
+    GStreamer::initialize(argc, argv, gstDebugLevel);
+#else
+    Q_UNUSED(gstDebugLevel)
+#endif
     // We need to set language as early as possible prior to loading on JSON files.
     setLanguage();
 
