@@ -18,7 +18,7 @@ import QGroundControl.FactSystem 1.0
 import QGroundControl.FactControls  1.0
 import QGroundControl.Controls  1.0
 import QGroundControl.ScreenTools 1.0
-import QGroundControl.QGCMapEngineManager
+import QGroundControl.QGCMapEngineManager 1.0
 
 
 Item {

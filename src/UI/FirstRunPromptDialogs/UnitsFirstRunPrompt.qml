@@ -14,7 +14,7 @@ import QGroundControl 1.0
 
 import QGroundControl.FactControls  1.0
 import QGroundControl.ScreenTools 1.0
-
+import QGroundControl.SettingsManager 1.0
 import QGroundControl.Controls  1.0
 
 FirstRunPrompt {

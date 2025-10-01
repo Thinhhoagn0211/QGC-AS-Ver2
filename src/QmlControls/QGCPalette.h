@@ -158,12 +158,6 @@ public:
     DEFINE_QGC_COLOR(toolStripHoverColor,           setToolStripHoverColor)
     DEFINE_QGC_COLOR(groupBorder,                   setGroupBorder)
 
-#ifdef QGC_UTM_ADAPTER
-    DEFINE_QGC_COLOR(switchUTMSP,                    setSwitchUTMSP)
-    DEFINE_QGC_COLOR(sliderUTMSP,                    setSliderUTMSP)
-    DEFINE_QGC_COLOR(successNotifyUTMSP,             setSuccessNotifyUTMSP)
-#endif
-
      QGCPalette(QObject* parent = nullptr);
     ~QGCPalette();
 

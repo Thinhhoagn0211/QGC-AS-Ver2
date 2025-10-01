@@ -755,7 +755,7 @@ FlightMap {
             text:       tileSet.defaultSet ?
                             qsTr("This will delete all tiles INCLUDING the tile sets you have created yourself.\n\nIs this really what you want?") :
                             qsTr("Delete %1 and all its tiles.\n\nIs this really what you want?").arg(tileSet.name)
-            standardButtons:    Dialog.Yes | Dialog.No
+            buttons:    Dialog.Yes | Dialog.No
 
             onAccepted: {
                 QGroundControl.mapEngineManager.deleteTileSet(tileSet)

@@ -87,7 +87,6 @@ Rectangle {
                 }
 
                 gradient: Gradient {
-                    // orientation: Gradient.Vertical
                     GradientStop { position: 0.00; color: topRightPanel.color }
                     GradientStop { position: 0.05; color: "transparent" }
 

@@ -17,7 +17,7 @@ import QGroundControl 1.0
 import QGroundControl.Controls  1.0
 import QGroundControl.ScreenTools 1.0
 import QGroundControl.Palette  1.0
-import QGroundControl.AppSettings
+import QGroundControl.SettingsManager 1.0
 
 Rectangle {
     id:     settingsView

@@ -61,6 +61,17 @@
         <file alias="GripperRelease.svg">resources/GripperRelease.svg</file>
         <file alias="GripperGrab.svg">resources/GripperGrab.svg</file>
         <file alias="qgroundcontrol.ico">resources/icons/qgroundcontrol.ico</file>
+        <file alias="setting.svg">resources/setting.svg</file>
+        <file alias="connect.svg">resources/connect.svg</file>
+        <file alias="home.svg">resources/home.svg</file>
+        <file alias="time.svg">resources/time.svg</file>
+        <file alias="TotalDistance.svg">resources/TotalDistance.svg</file>
+        <file alias="NextWaypoint.svg">resources/NextWaypoint.svg</file>
+        <file alias="scope.svg">resources/scope.svg</file>
+        <file alias="plan.svg">resources/plan.svg</file>
+        <file alias="zoom_in.svg">resources/zoom_in.svg</file>
+        <file alias="zoom_out.svg">resources/zoom_out.svg</file>
+        <file alias="payload.svg">resources/payload.svg</file>
     </qresource>
     <qresource prefix="/res/firmware">
         <file alias="3drradio.png">resources/firmware/3drradio.png</file>

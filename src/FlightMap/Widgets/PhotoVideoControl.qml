@@ -22,11 +22,9 @@ import QGroundControl.ScreenTools 1.0
 
 import QGroundControl.FactControls  1.0
 
-Rectangle {
+Item {
     width:      mainLayout.width + (_margins * 2)
     height:     mainLayout.height + (_margins * 2)
-    color:      Qt.rgba(qgcPal.window.r, qgcPal.window.g, qgcPal.window.b, 0.5)
-    radius:     _margins
     visible:    _camera.capturesVideo || _camera.capturesPhotos
 
     property real   _margins:                   ScreenTools.defaultFontPixelHeight / 2
@@ -40,10 +38,21 @@ Rectangle {
     property bool   _photoCaptureSingleIdle:    _camera.photoCaptureStatus === MavlinkCameraControl.PHOTO_CAPTURE_IDLE
     property bool   _photoCaptureIntervalIdle:  _camera.photoCaptureStatus === MavlinkCameraControl.PHOTO_CAPTURE_INTERVAL_IDLE
     property bool   _photoCaptureIdle:          _photoCaptureSingleIdle || _photoCaptureIntervalIdle
-
+    property var    _gimbalController:           _activeVehicle.gimbalController
     QGCPalette { id: qgcPal; colorGroupEnabled: enabled }
 
     DeadMouseArea { anchors.fill: parent }
+
+    Connections {
+        target: flyView.flyViewVideoControl.mouseArea
+        onClicked: { 
+            if ( _gimbalController.autoFocusEnabled == true) {
+            console.log("MouseArea clicked at:", mouse.x, mouse.y)
+            _gimbalController.autoFocus(mouse.x, mouse.y)
+            }
+        }
+    }
+
 
     RowLayout {
         id:                 mainLayout
@@ -55,7 +64,7 @@ Rectangle {
         ColumnLayout {
             Layout.fillHeight:  true
             spacing:            _margins
-            visible:            _camera.hasZoom
+            visible:            true
 
             QGCLabel {
                 Layout.alignment:   Qt.AlignHCenter
@@ -64,16 +73,179 @@ Rectangle {
             }
 
             QGCSlider {
+                id: control
                 Layout.alignment:   Qt.AlignHCenter
                 Layout.fillHeight:  true
                 orientation:        Qt.Vertical
-                to:                 100
+                to:                 30
                 from:               0
-                value:              _camera.zoomLevel
-                live:               true
-                onValueChanged:     _camera.zoomLevel = value
+                live:               false
+                value:              _gimbalController.zoomLevel
+
+                onPressedChanged: {
+                    if (!pressed) {
+                        _gimbalController.zoomLevel = value
+                        console.log("Zoom level set to: " + value);
+                    }
+                }
+
             }
         }
+        
+        ColumnLayout {
+            Layout.fillHeight:  true
+            spacing: _margins
+            visible:            true
+
+            RowLayout {
+                Layout.alignment: Qt.AlignHCenter
+                spacing: _margins
+                QGCLabel {
+                    text: qsTr("Absolute Zoom")
+                    font.pointSize: ScreenTools.smallFontPointSize
+                    Layout.alignment:   Qt.AlignHCenter
+                }
+                
+                TextField {
+                    id: zoomTextBox
+                    text: _gimbalController.zoomLevel.toFixed(1)
+                    inputMethodHints: Qt.ImhFormattedNumbersOnly
+                    Layout.preferredWidth: ScreenTools.defaultFontPixelWidth * 6
+                    Layout.alignment:   Qt.AlignHCenter
+                    horizontalAlignment: Text.AlignHCenter
+
+                    onEditingFinished: {
+                        let newZoom = parseFloat(text)
+                        if (!isNaN(newZoom)) {
+                            _gimbalController.zoomLevel = Math.max(control.from, Math.min(control.to, newZoom))
+                            control.value = _gimbalController.zoomLevel
+                        } else {
+                            text = _gimbalController.zoomLevel.toFixed(1)
+                        }
+                    }
+
+                    Connections {
+                        target: _gimbalController
+                        onZoomLevelChanged: {
+                            zoomTextBox.text = _gimbalController.zoomLevel.toFixed(1)
+                        }
+                    }
+                }
+            }
+
+            RowLayout {
+                Layout.alignment: Qt.AlignHCenter
+                spacing: _margins
+                property bool initialized: false
+                QGCLabel {
+                    text: qsTr("Manual Zoom")
+                    font.pointSize: ScreenTools.smallFontPointSize
+                }
+
+                ComboBox {
+                    id: zoomControl
+                    property bool initialized: false
+
+                    model: [
+                        { text: "Zoom vào", value: 1 },
+                        { text: "Dừng Zoom", value: 0 },
+                        { text: "Zoom ra", value: -1 }
+                    ]
+
+                    textRole: "text"
+
+                    Component.onCompleted: initialized = true
+
+                    currentIndex: {
+                        switch (_gimbalController.manualZoomState) {
+                            case 1: return 0;
+                            case 0: return 1;
+                            case -1: return 2;
+                            default: return 1;
+                        }
+                    }
+
+                    onCurrentIndexChanged: {
+                        if (!initialized)
+                            return;
+
+                        var selectedValue = zoomControl.model[currentIndex].value
+                        if (_gimbalController.manualZoomState !== selectedValue) {
+                            _gimbalController.manualZoomState = selectedValue
+                            _gimbalController.manualZoom(selectedValue)
+                            console.log("Manual zoom changed to:", selectedValue)
+                        }
+                    }
+                }
+
+            }
+
+            RowLayout {
+                Layout.alignment: Qt.AlignHCenter
+                spacing: _margins
+
+                QGCLabel {
+                    text: qsTr("Auto Focus")
+                    font.pointSize: ScreenTools.smallFontPointSize
+                }
+
+                CheckBox {
+                    id: autoFocusCheck
+                    checked:  _gimbalController.autoFocusEnabled
+                    onCheckedChanged: {
+                        _gimbalController.autoFocusEnabled = checked
+                        console.log("print check box",  _gimbalController.autoFocusEnabled)
+                    }
+                }
+            }
+
+            RowLayout {
+                Layout.alignment: Qt.AlignHCenter
+                spacing: _margins
+
+                QGCLabel {
+                    text: qsTr("Manual Focus")
+                    font.pointSize: ScreenTools.smallFontPointSize
+                }
+
+                ComboBox {
+                    id: focusControl
+                    property bool initialized: false
+
+                    model: [
+                        { text: "Lấy nét xa", value: 1 },
+                        { text: "Dừng lấy nét", value: 0 },
+                        { text: "Lấy nét gần", value: -1 }
+                    ]
+
+                    textRole: "text"
+
+                    Component.onCompleted: initialized = true
+
+                    currentIndex: {
+                        switch (_gimbalController.manualFocusState) {
+                            case 1: return 0;
+                            case 0: return 1;
+                            case -1: return 2;
+                            default: return 1;
+                        }
+                    }
+
+                    onCurrentIndexChanged: {
+                        if (!initialized)
+                            return;
+
+                        var selectedValue = focusControl.model[currentIndex].value
+                        if (_gimbalController.manualFocusState !== selectedValue) {
+                            _gimbalController.manualFocusState = selectedValue
+                            _gimbalController.manualFocus(selectedValue)
+                            console.log("Manual focus changed to:", selectedValue)
+                        }
+                    }
+                }
+            }
+        }
+
         
         ColumnLayout {
             spacing: _margins * 2
@@ -165,13 +337,7 @@ Rectangle {
                     border.width:       3
 
                     Rectangle {
-                        // anchors.centerIn snaps to integer coordinates, which
-                        // depending on DPI can throw the centering off.
-                        // Setting alignWhenCentered to false avoids this issue.
-                        anchors {
-                            centerIn:           parent
-                            alignWhenCentered:  false
-                        }
+                        anchors.centerIn:   parent
                         width:              parent.width * (_isShootingInCurrentMode ? 0.5 : 0.75)
                         height:             width
                         radius:             _isShootingInCurrentMode ? 0 : width * 0.5
@@ -284,7 +450,7 @@ Rectangle {
                             onClicked: {
                                 _camera.trackingEnabled = !_camera.trackingEnabled;
                                 if (!_camera.trackingEnabled) {
-                                    _camera.stopTracking()
+                                    !camera.stopTracking()
                                 }
                             }
                         }
@@ -336,18 +502,24 @@ Rectangle {
                         flow:   GridLayout.TopToBottom
                         rows:   dynamicRows + _camera.activeSettings.length
 
-                        property int dynamicRows: 10
+                        property int dynamicRows: 11
 
                         // First column
                         QGCLabel {
                             text:               qsTr("Camera")
-                            visible:            _multipleMavlinkCameras
+                            visible:            true
                             onVisibleChanged:   gridLayout.dynamicRows += visible ? 1 : -1
                         }
 
                         QGCLabel {
-                            text:               qsTr("Video Stream")
-                            visible:            _multipleMavlinkCameraStreams
+                            text:               qsTr("Main Stream")
+                            visible:            true
+                            onVisibleChanged:   gridLayout.dynamicRows += visible ? 1 : -1
+                        }
+
+                        QGCLabel {
+                            text:               qsTr("Sub Stream")
+                            visible:            true
                             onVisibleChanged:   gridLayout.dynamicRows += visible ? 1 : -1
                         }
 
@@ -413,17 +585,30 @@ Rectangle {
                             sizeToContents:     true
                             model:              _cameraManager.cameraLabels
                             currentIndex:       _cameraManager.currentCamera
-                            visible:            _multipleMavlinkCameras
+                            visible:            true
                             onActivated:        (index) => { _cameraManager.currentCamera = index }
                         }
 
                         QGCComboBox {
                             Layout.fillWidth:   true
                             sizeToContents:     true
-                            model:              _camera.streamLabels
-                            currentIndex:       _camera.currentStream
-                            visible:            _multipleMavlinkCameraStreams
-                            onActivated:        (index) => { _camera.currentStream = index }
+                            model:              _gimbalController.mainStreamModes
+                            currentIndex:       _gimbalController.mainStreamIndex
+                            visible:            true
+                            onActivated:        (index) => {  
+                                _gimbalController.mainStreamIndex = index 
+                             }
+                        }
+
+                        QGCComboBox {
+                            Layout.fillWidth:   true
+                            sizeToContents:     true
+                            model:              _gimbalController.subStreamModes
+                            currentIndex:       _gimbalController.subStreamIndex
+                            visible:            true
+                            onActivated:        (index) => {  
+                                _gimbalController.subStreamIndex = index 
+                             }
                         }
 
                         QGCComboBox {
@@ -568,7 +753,7 @@ Rectangle {
                                 id:                 formatPrompt
                                 title:              qsTr("Format Camera Storage")
                                 text:               qsTr("Confirm erasing all files?")
-                                standardButtons:    MessageDialog.Yes | MessageDialog.No
+                                standardButtons:            MessageDialog.Yes | MessageDialog.No
 
                                 onButtonClicked: function (button, role) {
                                     switch (button) {

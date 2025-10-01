@@ -16,26 +16,789 @@
 #include "SettingsManager.h"
 #include "Vehicle.h"
 #include <QtMath>
-
+#include "MavlinkSettings.h"
 QGC_LOGGING_CATEGORY(GimbalControllerLog, "GimbalControllerLog")
+
 
 GimbalController::GimbalController(Vehicle *vehicle)
     : QObject(vehicle)
     , _vehicle(vehicle)
     , _gimbals(new QmlObjectListModel(this))
 {
-    qCDebug(GimbalControllerLog) << this;
+    // qCDebug(GimbalControllerLog) << Q_FUNC_INFO << this;
 
-    (void) connect(_vehicle, &Vehicle::mavlinkMessageReceived, this, &GimbalController::_mavlinkMessageReceived);
 
-    _rateSenderTimer.setInterval(500);
-    (void) connect(&_rateSenderTimer, &QTimer::timeout, this, &GimbalController::_rateSenderTimeout);
+    _laserDistanceTimer = new QTimer(this);
+    _laserDistanceTimer->setInterval(1000);
+    connect(_laserDistanceTimer, &QTimer::timeout, this, &GimbalController::requestLaserDistanceMeasurement);
+
+    setupSocket();
 }
 
 GimbalController::~GimbalController()
 {
-    qCDebug(GimbalControllerLog) << this;
+    // qCDebug(GimbalControllerLog) << Q_FUNC_INFO << this;
 }
+
+void GimbalController::setupSocket()
+{
+    if (!_udpSocket) {
+        _udpSocket = new QUdpSocket(this);
+    }
+
+    const QString hostName = SettingsManager::instance()->mavlinkSettings()->forwardRaspherriMavlinkHostName()->rawValue().toString();
+    QString host = "127.0.0.1";
+    quint16 port = 14445;
+
+    QStringList parts = hostName.split(":");
+    if (parts.size() == 2) {
+        host = parts[0];
+        bool ok = false;
+        quint16 parsedPort = parts[1].toUShort(&ok);
+        if (ok) {
+            port = parsedPort;
+        }
+    }
+    _udpSocket->connectToHost(host, port);
+    connect(_udpSocket, &QUdpSocket::readyRead, this, &GimbalController::readPendingDatagrams);
+
+    QTimer::singleShot(0,   Qt::PreciseTimer, this, [this]{ getStitchingMode(); });
+    QTimer::singleShot(20,  Qt::PreciseTimer, this, [this]{ getGimbalAttitudeData(); });
+    QTimer::singleShot(40,  Qt::PreciseTimer, this, [this]{ requestLaserRangingState(); });
+    QTimer::singleShot(60,  Qt::PreciseTimer, this, [this]{ requestCameraSystemInformation(); });
+    QTimer::singleShot(80,  Qt::PreciseTimer, this, [this]{ requestCurrentThermalPseudoColor(); });
+    QTimer::singleShot(100, Qt::PreciseTimer, this, [this]{ requestCameraEncodingParamaters(1); });
+}
+
+
+/*
+    All functions below to send mavlink command into raspherri PI
+*/
+
+
+void GimbalController::requestCameraSystemInformation()
+{
+    mavlink_message_t msg;
+    mavlink_msg_request_camera_system_information_pack(1, 1, &msg, 1);
+
+    uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
+    uint16_t len = mavlink_msg_to_send_buffer(buffer, &msg);
+
+    qint64 bytesSent = _udpSocket->write(reinterpret_cast<const char*>(buffer), len);
+
+    if (bytesSent == -1) {
+        qCritical() << "Failed to send MAVLink message:" << _udpSocket->errorString();
+    }
+}
+
+
+void GimbalController::autoFocus(uint16_t touch_x, uint16_t touch_y)
+{
+    mavlink_message_t msg;
+    mavlink_msg_auto_focus_pack(1, 1, &msg, 1, touch_x, touch_y);
+
+    uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
+    uint16_t len = mavlink_msg_to_send_buffer(buffer, &msg);
+
+    qint64 bytesSent = _udpSocket->write(reinterpret_cast<const char*>(buffer), len);
+
+    if (bytesSent == -1) {
+        qCritical() << "Failed to send MAVLink message:" << _udpSocket->errorString();
+    } 
+}
+
+
+void GimbalController::manualZoom(uint8_t zoom)
+{
+    mavlink_message_t msg;
+        mavlink_msg_manual_zoom_with_autofocus_pack(1, 1, &msg, zoom);
+
+    uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
+    uint16_t len = mavlink_msg_to_send_buffer(buffer, &msg);
+
+    qint64 bytesSent = _udpSocket->write(reinterpret_cast<const char*>(buffer), len);
+
+    if (bytesSent == -1) {
+        qCritical() << "Failed to send MAVLink message:" << _udpSocket->errorString();
+    } 
+}
+
+void GimbalController::manualFocus(int8_t focus)
+{
+    mavlink_message_t msg;
+    mavlink_msg_manual_focus_pack(1, 1, &msg, focus);
+
+    uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
+    uint16_t len = mavlink_msg_to_send_buffer(buffer, &msg);
+
+    qint64 bytesSent = _udpSocket->write(reinterpret_cast<const char*>(buffer), len);
+
+    if (bytesSent == -1) {
+        qCritical() << "Failed to send MAVLink message:" << _udpSocket->errorString();
+    } 
+}
+
+void GimbalController::gimbalRotationControl(int8_t turn_yaw, int8_t turn_pitch)
+{
+    mavlink_message_t msg;
+    mavlink_msg_gimbal_rotation_control_pack(1, 1, &msg, turn_yaw, turn_pitch);
+
+    uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
+    uint16_t len = mavlink_msg_to_send_buffer(buffer, &msg);
+
+    qint64 bytesSent = _udpSocket->write(reinterpret_cast<const char*>(buffer), len);
+
+    if (bytesSent == -1) {
+        qCritical() << "Failed to send MAVLink message:" << _udpSocket->errorString();
+    } 
+}
+
+void GimbalController::getTemperatureAtSelectedPoint(uint16_t x, uint16_t y, uint8_t get_temp_flag)
+{
+    mavlink_message_t msg;
+    mavlink_msg_get_temperature_at_selected_point_pack(1, 1, &msg, x, y, get_temp_flag);
+
+    uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
+    uint16_t len = mavlink_msg_to_send_buffer(buffer, &msg);
+
+    qint64 bytesSent = _udpSocket->write(reinterpret_cast<const char*>(buffer), len);
+
+    if (bytesSent == -1) {
+        qCritical() << "Failed to send MAVLink message:" << _udpSocket->errorString();
+    } 
+}
+
+void GimbalController::localTemperatureMeasurement(uint16_t startx, uint16_t starty, uint16_t endx, uint16_t endy, uint8_t get_temp_flag)
+{
+    mavlink_message_t msg;
+    mavlink_msg_local_temperature_measurement_pack(1, 1, &msg, startx, starty, endx, endy, get_temp_flag);
+
+    uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
+    uint16_t len = mavlink_msg_to_send_buffer(buffer, &msg);
+
+    qint64 bytesSent = _udpSocket->write(reinterpret_cast<const char*>(buffer), len);
+
+    if (bytesSent == -1) {
+        qCritical() << "Failed to send MAVLink message:" << _udpSocket->errorString();
+    }
+}
+
+void GimbalController::globalTemperatureMeasurement( uint8_t get_temp_flag)
+{
+    mavlink_message_t msg;
+    mavlink_msg_global_temperature_measurement_pack(1, 1, &msg, get_temp_flag);
+
+    uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
+    uint16_t len = mavlink_msg_to_send_buffer(buffer, &msg);
+
+    qint64 bytesSent = _udpSocket->write(reinterpret_cast<const char*>(buffer), len);
+
+    if (bytesSent == -1) {
+        qCritical() << "Failed to send MAVLink message:" << _udpSocket->errorString();
+    } 
+}
+
+void GimbalController::requestCameraEncodingParamaters( uint8_t req_stream_type)
+{
+    mavlink_message_t msg;
+    mavlink_msg_request_camera_encoding_parameters_pack(1, 1, &msg, req_stream_type);
+
+    uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
+    uint16_t len = mavlink_msg_to_send_buffer(buffer, &msg);
+
+    qint64 bytesSent = _udpSocket->write(reinterpret_cast<const char*>(buffer), len);
+
+    if (bytesSent == -1) {
+        qCritical() << "Failed to send MAVLink message:" << _udpSocket->errorString();
+    } 
+}
+
+void GimbalController::requestLaserRangingState()
+{
+    mavlink_message_t msg;
+    mavlink_msg_request_system_info_pack(1, 1, &msg, 0);
+
+    uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
+    uint16_t len = mavlink_msg_to_send_buffer(buffer, &msg);
+
+    qint64 bytesSent = _udpSocket->write(reinterpret_cast<const char*>(buffer), len);
+
+    if (bytesSent == -1) {
+        qCritical() << "Failed to send MAVLink message:" << _udpSocket->errorString();
+    } 
+}
+
+void GimbalController::setLaserRangingState(uint8_t laser_state)
+{
+    mavlink_message_t msg;
+    mavlink_msg_set_laser_state_pack(1, 1, &msg, laser_state);
+
+    uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
+    uint16_t len = mavlink_msg_to_send_buffer(buffer, &msg);
+
+    qint64 bytesSent = _udpSocket->write(reinterpret_cast<const char*>(buffer), len);
+
+    if (bytesSent == -1) {
+        qCritical() << "Failed to send MAVLink message:" << _udpSocket->errorString();
+    } 
+}
+
+void GimbalController::requestLaserDistanceMeasurement()
+{
+    mavlink_message_t msg;
+    mavlink_msg_request_laser_distance_measurement_pack(1, 1, &msg, 0);
+
+    uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
+    uint16_t len = mavlink_msg_to_send_buffer(buffer, &msg);
+
+    qint64 bytesSent = _udpSocket->write(reinterpret_cast<const char*>(buffer), len);
+
+    if (bytesSent == -1) {
+        qCritical() << "Failed to send MAVLink message:" << _udpSocket->errorString();
+    }
+}
+
+void GimbalController::gimbalCameraReboot(uint8_t camera_reboot, uint8_t gimbal_reset)
+{   
+    if (camera_reboot != _cameraSoftReboot) {
+        _cameraSoftReboot = camera_reboot;
+        emit cameraSoftRebootChanged();
+    }
+    if (gimbal_reset != _gimbalSoftReboot) {
+        _gimbalSoftReboot = gimbal_reset;
+        emit gimbalSoftRebootChanged();
+    }
+    mavlink_message_t msg;
+    mavlink_msg_gimbal_camera_soft_reboot_pack(1, 1, &msg, camera_reboot, gimbal_reset);
+
+    uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
+    uint16_t len = mavlink_msg_to_send_buffer(buffer, &msg);
+
+    qint64 bytesSent = _udpSocket->write(reinterpret_cast<const char*>(buffer), len);
+
+    if (bytesSent == -1) {
+        qCritical() << "Failed to send MAVLink message:" << _udpSocket->errorString();
+    }
+}
+
+
+void GimbalController::getStitchingMode()
+{
+    mavlink_message_t msg;
+    mavlink_msg_request_video_stitching_mode_pack(1, 1, &msg, 0);
+
+    uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
+    uint16_t len = mavlink_msg_to_send_buffer(buffer, &msg);
+
+    qint64 bytesSent = _udpSocket->write(reinterpret_cast<const char*>(buffer), len);
+
+    if (bytesSent == -1) {
+        qCritical() << "Failed to send MAVLink message:" << _udpSocket->errorString();
+    } else {
+        qDebug() << "Request stitching mode on main stream successfully, bytes:" << bytesSent;
+    }
+}
+
+void GimbalController::setStitchingMode(uint8_t vdisp_mode)
+{
+    mavlink_message_t msg;
+    mavlink_msg_set_video_stitching_mode_pack(1, 1, &msg, vdisp_mode);
+
+    uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
+    uint16_t len = mavlink_msg_to_send_buffer(buffer, &msg);
+
+    qint64 bytesSent = _udpSocket->write(reinterpret_cast<const char*>(buffer), len);
+
+    if (bytesSent == -1) {
+        qCritical() << "Failed to send MAVLink message:" << _udpSocket->errorString();
+    } else {
+        qDebug() << "Request stitching mode on main stream successfully, bytes:" << bytesSent;
+    }
+}
+
+int GimbalController::findVdispMode(const QString& main, const QString& sub) const {
+    for (const auto& mode : kMainStreamModes) {
+        if (mode.mainStream == main && mode.subStream == sub) {
+            return mode.vdisp_mode;
+        }
+    }
+    return -1; // not found
+}
+
+
+void GimbalController::setMainStreamIndex(int index) {
+    QStringList uniqueMainStreams;
+    QSet<QString> seen;
+
+    for (const auto& mode : kMainStreamModes) {
+        if (!seen.contains(mode.mainStream)) {
+            seen.insert(mode.mainStream);
+            uniqueMainStreams << mode.mainStream;
+        }
+    }
+
+    if (index < 0 || index >= uniqueMainStreams.size()) return;
+
+    mainStreamMode = uniqueMainStreams[index]; // get actual string
+    _mainStreamIndex = index;
+
+    // find corresponding vdisp_mode from mainStream + current subStream
+    _vdispMode = findVdispMode(mainStreamMode, subStreamMode);
+
+    if (_vdispMode != -1) {
+        setStitchingMode(_vdispMode);
+    }
+
+    qDebug() << "[GimbalController] mainStream:" << mainStreamMode
+             << "[GimbalController] subStream:" << subStreamMode
+             << "=> vdisp_mode:" << _vdispMode;
+
+    emit mainStreamIndexChanged();
+    emit vdispModeChanged();
+}
+
+
+void GimbalController::setSubStreamIndex(int index) {
+    QStringList uniqueSubStreams;
+    QSet<QString> seen;
+
+    for (const auto& mode : kMainStreamModes) {
+        if (!seen.contains(mode.subStream)) {
+            seen.insert(mode.subStream);
+            uniqueSubStreams << mode.subStream;
+        }
+    }
+
+    if (index < 0 || index >= uniqueSubStreams.size()) return;
+
+    subStreamMode = uniqueSubStreams[index]; // get actual string
+    _subStreamIndex = index;
+
+    // find corresponding vdisp_mode from mainStream + current subStream
+    _vdispMode = findVdispMode(mainStreamMode, subStreamMode);
+
+    if (_vdispMode != -1) {
+        setStitchingMode(_vdispMode);
+    }
+
+    qDebug() << "[GimbalController] mainStream:" << mainStreamMode
+             << "[GimbalController] subStream:" << subStreamMode
+             << "=> vdisp_mode:" << _vdispMode;
+
+    emit subStreamIndexChanged();
+    emit vdispModeChanged();
+}
+
+QStringList GimbalController::mainStreamModes() const
+{
+    QSet<QString> seen;
+    QStringList list;
+
+    for (const auto& mode : kMainStreamModes) {
+        if (!seen.contains(mode.mainStream)) {
+            seen.insert(mode.mainStream);
+            list << mode.mainStream;
+        }
+    }
+
+    return list;
+}
+
+QStringList GimbalController::subStreamModes() const
+{
+    QSet<QString> seen;
+    QStringList list;
+
+    for (const auto& mode : kMainStreamModes) {
+        if (!seen.contains(mode.subStream)) {
+            seen.insert(mode.subStream);
+            list << mode.subStream;
+        }
+    }
+
+    return list;
+}
+
+
+void GimbalController::setZoomLevel(qreal level)
+{
+    level = std::clamp(level, 0.0, 30.0);
+    int zoomInt = static_cast<int>(level);                           
+    int zoomDecimal = static_cast<int>((level - zoomInt) * 100);
+    mavlink_message_t msg;
+    mavlink_msg_absolute_zoom_auto_focus_pack(
+        1,
+        1,
+        &msg,
+        zoomInt,
+        zoomDecimal
+    );
+    uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
+    uint16_t len = mavlink_msg_to_send_buffer(buffer, &msg);
+
+    qint64 bytesSent = _udpSocket->write(reinterpret_cast<const char*>(buffer), len);
+
+    if (bytesSent == -1) {
+        qCritical() << "Failed to send MAVLink message:" << _udpSocket->errorString();
+    } 
+    if (qFuzzyCompare(_zoomLevel, level))
+        return; // No change
+    _zoomLevel = level;
+    emit zoomLevelChanged();
+}
+
+
+void GimbalController::getGimbalAttitudeData()
+{
+    mavlink_message_t msg;
+    mavlink_msg_request_gimbal_attitude_data_pack(
+        1,
+        1,
+        &msg,
+        0
+    );
+    uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
+    uint16_t len = mavlink_msg_to_send_buffer(buffer, &msg);
+
+    qint64 bytesSent = _udpSocket->write(reinterpret_cast<const char*>(buffer), len);
+
+    if (bytesSent == -1) {
+        qCritical() << "Failed to send MAVLink message:" << _udpSocket->errorString();
+    }
+}
+
+
+void GimbalController::requestCurrentThermalPseudoColor()
+{
+    mavlink_message_t msg;
+    mavlink_msg_request_current_thermal_image_pseudocolor_pack(1,1, &msg, 0);
+    uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
+    uint16_t len = mavlink_msg_to_send_buffer(buffer, &msg);
+
+    qint64 bytesSent = _udpSocket->write(reinterpret_cast<const char*>(buffer), len);
+
+    if (bytesSent == -1) {
+        qCritical() << "Failed to send MAVLink message:" << _udpSocket->errorString();
+    }
+}
+
+
+void GimbalController::setCurrentThermalPseudoColor(int pseudo_color)
+{
+    mavlink_message_t msg;
+    mavlink_msg_set_current_thermal_image_pseudocolor_pack(1,1, &msg, pseudo_color);
+    uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
+    uint16_t len = mavlink_msg_to_send_buffer(buffer, &msg);
+
+    qint64 bytesSent = _udpSocket->write(reinterpret_cast<const char*>(buffer), len);
+
+    if (bytesSent == -1) {
+        qCritical() << "Failed to send MAVLink message:" << _udpSocket->errorString();
+    }
+}
+
+
+void GimbalController::setCurrentGimbalMode(int gimbal_mode)
+{
+    int tmp_gimbal_mode;
+    switch (gimbal_mode)
+    {
+    case 0:
+        _gimbalCurrentMode = 0;
+        tmp_gimbal_mode = 3;
+        emit gimbalCurrentModeChanged();
+        break;
+    case 1:
+        _gimbalCurrentMode = 1;
+        tmp_gimbal_mode = 4;
+        emit gimbalCurrentModeChanged();
+        break;
+    case 2:
+        _gimbalCurrentMode = 2;
+        tmp_gimbal_mode = 5;
+        emit gimbalCurrentModeChanged();
+        break;
+    default:
+        break;
+    }
+
+    mavlink_message_t msg;
+    mavlink_msg_capture_photo_record_video_pack(1,1, &msg, tmp_gimbal_mode);
+    uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
+    uint16_t len = mavlink_msg_to_send_buffer(buffer, &msg);
+
+    
+    qint64 bytesSent = _udpSocket->write(reinterpret_cast<const char*>(buffer), len);
+
+    if (bytesSent == -1) {
+        qCritical() << "Failed to send MAVLink message:" << _udpSocket->errorString();
+    }
+}
+
+
+void GimbalController::toggleGimbalRetracted(bool set)
+{
+    getGimbalAttitudeData();
+
+    // retractedGimbalData();
+}
+
+void GimbalController::sendPitchBodyYaw(float pitch, float yaw, bool showError)
+{
+
+    _rateSenderTimer.stop();
+
+    // currentYaw = 0;
+    // currentPitch = 0;
+
+    mavlink_message_t msg;
+    mavlink_msg_set_gimbal_attitude_angles_pack(
+        1,
+        1,
+        &msg,
+        yaw * 10,
+        pitch * 10
+    );
+    uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
+    uint16_t len = mavlink_msg_to_send_buffer(buffer, &msg);
+
+    qint64 bytesSent = _udpSocket->write(reinterpret_cast<const char*>(buffer), len);
+
+    if (bytesSent == -1) {
+        qCritical() << "Failed to send MAVLink message:" << _udpSocket->errorString();
+    } 
+}
+
+
+void GimbalController::sendPitchAbsoluteYaw(float pitch, float yaw, bool showError)
+{
+    if (!_tryGetGimbalControl()) {
+        return;
+    }
+
+    _rateSenderTimer.stop();
+    _activeGimbal->setAbsolutePitch(0.0f);
+    _activeGimbal->setYawRate(0.0f);
+
+    if (yaw > 180.0f) {
+        yaw -= 360.0f;
+    }
+
+    if (yaw < -180.0f) {
+        yaw += 360.0f;
+    }
+
+    // qCDebug() << "sendPitch: " << pitch << " absoluteYaw: " << yaw;
+
+    const unsigned flags = GIMBAL_MANAGER_FLAGS_ROLL_LOCK
+                         | GIMBAL_MANAGER_FLAGS_PITCH_LOCK
+                         | GIMBAL_MANAGER_FLAGS_YAW_LOCK
+                         | GIMBAL_MANAGER_FLAGS_YAW_IN_EARTH_FRAME;
+
+    _vehicle->sendMavCommand(
+        _activeGimbal->managerCompid()->rawValue().toUInt(),
+        MAV_CMD_DO_GIMBAL_MANAGER_PITCHYAW,
+        showError,
+        pitch,
+        yaw,
+        std::numeric_limits<double>::quiet_NaN(),
+        std::numeric_limits<double>::quiet_NaN(),
+        flags,
+        0,
+        _activeGimbal->deviceId()->rawValue().toUInt());
+}
+
+
+
+void GimbalController::readPendingDatagrams()
+{
+    while (_udpSocket->hasPendingDatagrams()) {
+        QByteArray datagram;
+        datagram.resize(int(_udpSocket->pendingDatagramSize()));
+        _udpSocket->readDatagram(datagram.data(), datagram.size());
+
+        mavlink_message_t msg;
+        mavlink_status_t status;
+        for (int i = 0; i < datagram.size(); ++i) {
+            if (mavlink_parse_char(MAVLINK_COMM_0, static_cast<uint8_t>(datagram[i]), &msg, &status)) {
+                handleMavlinkMessage(msg);
+                break;
+            }
+        }
+    }
+}
+
+void GimbalController::handleMavlinkMessage(const mavlink_message_t& msg)
+{
+    // qDebug() << "Received MAVLink message ID:" << msg.msgid;
+
+    switch (msg.msgid)
+    {
+    case MAVLINK_MSG_ID_RESPONSE_REQUEST_CAMERA_SYSTEM_INFORMATION:
+    {
+        mavlink_response_request_camera_system_information_t decoded;
+        mavlink_msg_response_request_camera_system_information_decode(&msg, &decoded);
+        
+        if (_gimbalCurrentMode != decoded.gimbal_motion_mode)
+        {
+            _gimbalCurrentMode = decoded.gimbal_motion_mode;
+            emit gimbalCurrentModeChanged();
+        }
+        break;   
+    }
+    case MAVLINK_MSG_ID_RESPONSE_REQUEST_GIMBAL_ATTITUDE_DATA:
+    {
+        mavlink_response_request_gimbal_attitude_data_t decoded;
+        mavlink_msg_response_request_gimbal_attitude_data_decode(&msg, &decoded);
+        if (decoded.pitch != 0 || decoded.yaw != 0){
+            currentPitch = decoded.pitch / 10.0f;
+            currentYaw = decoded.yaw / 10.0f;
+        }
+        break;
+    }
+    case MAVLINK_MSG_ID_RESPONSE_REQUEST_VIDEO_STITCHING_MODE:
+    {
+        mavlink_response_request_video_stitching_mode_t decoded;
+        mavlink_msg_response_request_video_stitching_mode_decode(&msg, &decoded);
+
+        qDebug() << "Decoded Gimbal Attitude:";
+        qDebug() << "  Video Stitching Mode:" << decoded.vdisp_mode;
+        getStreamModesFromVdisp(decoded.vdisp_mode);
+        break;
+    }
+    case MAVLINK_MSG_ID_RESPONSE_SET_VIDEO_STITCHING_MODE:
+    {
+        mavlink_response_set_video_stitching_mode_t decoded;
+        mavlink_msg_response_set_video_stitching_mode_decode(&msg, &decoded);
+        qDebug() << "Decoded Gimbal Attitude:";
+        qDebug() << "  Video Stitching Mode:" << decoded.vdisp_mode;
+        break;
+    }
+    case MAVLINK_MSG_ID_RESPONSE_REQUEST_SYSTEM_INFO:
+    {
+        mavlink_response_request_system_info_t decoded;
+        mavlink_msg_response_request_system_info_decode(&msg, &decoded);
+        qDebug() <<"Laser range finder state: " << decoded.laser_state;
+        if (decoded.laser_state == 1) {
+            _rangeFinderEnabled = true;
+        } else if (decoded.laser_state == 0) {
+            _rangeFinderEnabled = false;
+        }
+        emit rangeFinderEnabledChanged();
+        break;
+    }
+    case MAVLINK_MSG_ID_RESPONSE_REQUEST_LASER_DISTANCE_MEASUREMENT:
+    {
+        mavlink_response_request_laser_distance_measurement_t decoded;
+        mavlink_msg_response_request_laser_distance_measurement_decode(&msg, &decoded);
+        _targetDistance = decoded.laser_distance / 10.0f;
+        emit targetDistanceChanged();
+        break;
+    }
+    case MAVLINK_MSG_ID_RESPONSE_GET_TEMPERATURE_AT_SELECTED_POINT:
+    {
+        mavlink_response_get_temperature_at_selected_point_t decoded;
+        mavlink_msg_response_get_temperature_at_selected_point_decode(&msg, &decoded);
+        _targetTemperature = decoded.temperature / 100.0f;
+        _targetTemperaturePointX = decoded.x;
+        _targetTemperaturePointY = decoded.y;
+        emit targetTemperatureChanged();
+        break;
+    }
+    case MAVLINK_MSG_ID_RESPONSE_LOCAL_TEMPERATURE_MEASUREMENT:
+    {
+        mavlink_response_local_temperature_measurement_t decoded;
+        mavlink_msg_response_local_temperature_measurement_decode(&msg, &decoded);
+        _targetTemperatureMax = decoded.temp_max / 100.0f;
+        _targetTemperatureMin = decoded.temp_min / 100.0f;
+        _targetTemperatureMinX = decoded.temp_min_x;
+        _targetTemperatureMinY = decoded.temp_min_y;
+        _targetTemperatureMaxX = decoded.temp_max_x;
+        _targetTemperatureMaxY = decoded.temp_max_y;
+
+        emit targetTemperatureMaxChanged();
+        emit targetTemperatureMaxXChanged();
+        emit targetTemperatureMaxYChanged();
+        emit targetTemperatureMinChanged();
+        emit targetTemperatureMinXChanged();
+        emit targetTemperatureMinYChanged();
+        break;
+    }
+    case MAVLINK_MSG_ID_RESPONSE_GLOBAL_TEMPERATURE_MEASUREMENT:
+    {
+        mavlink_response_global_temperature_measurement_t decoded;
+        mavlink_msg_response_global_temperature_measurement_decode(&msg, &decoded);
+        _targetTemperatureMax = decoded.temp_max / 100.0f;
+        _targetTemperatureMin = decoded.temp_min / 100.0f;
+        _targetTemperatureMinX = decoded.temp_min_x;
+        _targetTemperatureMinY = decoded.temp_min_y;
+        _targetTemperatureMaxX = decoded.temp_max_x;
+        _targetTemperatureMaxY = decoded.temp_max_y;
+
+        emit targetTemperatureMaxChanged();
+        emit targetTemperatureMaxXChanged();
+        emit targetTemperatureMaxYChanged();
+        emit targetTemperatureMinChanged();
+        emit targetTemperatureMinXChanged();
+        emit targetTemperatureMinYChanged();
+        break;
+    }
+    case MAVLINK_MSG_ID_RESPONSE_REQUEST_CAMERA_ENCODING_PARAMETERS:
+    {
+        mavlink_response_request_camera_encoding_parameters_t decoded;
+        mavlink_msg_response_request_camera_encoding_parameters_decode(&msg, &decoded);
+        
+        _mainStreamResolutionW = decoded.resolution_width;
+        _mainStreamResolutionH = decoded.resolution_height;
+
+        emit mainStreamResolutionHChanged();
+        emit mainStreamResolutionWChanged();
+        break;   
+    }
+    case MAVLINK_MSG_ID_RESPONSE_REQUEST_CURRENT_THERMAL_IMAGE_PSEUDOCOLOR:
+    {
+        mavlink_response_request_current_thermal_image_pseudocolor_t decoded;
+        mavlink_msg_response_request_current_thermal_image_pseudocolor_decode(&msg, &decoded);
+        
+        if (_currentThermalPseudoColor != decoded.pseudo_color)
+        {
+            _currentThermalPseudoColor = decoded.pseudo_color;
+            emit currentThermalPseudoColorChanged();
+        }
+        break; 
+    }
+    case MAVLINK_MSG_ID_RESPONSE_SET_CURRENT_THERMAL_IMAGE_PSEUDOCOLOR:
+    {
+        mavlink_response_set_current_thermal_image_pseudocolor_t decoded;
+        mavlink_msg_response_set_current_thermal_image_pseudocolor_decode(&msg, &decoded);
+        
+        if (_currentThermalPseudoColor != decoded.pseudo_color)
+        {
+            _currentThermalPseudoColor = decoded.pseudo_color;
+            emit currentThermalPseudoColorChanged();
+        }
+        break; 
+    }
+    default:
+        break;
+    }
+}
+
+void GimbalController::getStreamModesFromVdisp(int vdisp_mode)
+{
+    for (const auto& mode : kMainStreamModes) {
+        if (mode.vdisp_mode == vdisp_mode) {
+            mainStreamMode = mode.mainStream;
+            subStreamMode = mode.subStream;
+            return;
+        }
+    }
+
+    // fallback if vdisp_mode not found
+    mainStreamMode = "Unknown";
+    subStreamMode = "Unknown";
+}
+
 
 void GimbalController::setActiveGimbal(Gimbal *gimbal)
 {
@@ -70,7 +833,7 @@ void GimbalController::_mavlinkMessageReceived(const mavlink_message_t &message)
         _handleGimbalManagerStatus(message);
         break;
     case MAVLINK_MSG_ID_GIMBAL_DEVICE_ATTITUDE_STATUS:
-        _handleGimbalDeviceAttitudeStatus(message);
+           _handleGimbalDeviceAttitudeStatus(message);
         break;
     default:
         break;
@@ -88,7 +851,7 @@ void GimbalController::_handleHeartbeat(const mavlink_message_t &message)
     // Note that we are working over potential gimbal managers here, instead of potential gimbals.
     // This is because we address the gimbal manager by compid, but a gimbal device might have an
     // id different than the message compid it comes from. For more information see https://mavlink.io/en/services/gimbal_v2.html
-    if (!gimbalManager.receivedGimbalManagerInformation && (gimbalManager.requestGimbalManagerInformationRetries > 0)) {
+    if (!gimbalManager.receivedInformation && (gimbalManager.requestGimbalManagerInformationRetries > 0)) {
         _requestGimbalInformation(message.compid);
         --gimbalManager.requestGimbalManagerInformationRetries;
     }
@@ -117,7 +880,6 @@ void GimbalController::_handleGimbalManagerInformation(const mavlink_message_t &
     Gimbal *const gimbal = gimbalIt.value();
     gimbal->setManagerCompid(message.compid);
     gimbal->setDeviceId(information.gimbal_device_id);
-    gimbal->setCapabilityFlags(information.cap_flags);
 
     if (!gimbal->_receivedGimbalManagerInformation) {
         qCDebug(GimbalControllerLog) << "gimbal manager with compId:" << message.compid
@@ -127,7 +889,7 @@ void GimbalController::_handleGimbalManagerInformation(const mavlink_message_t &
     gimbal->_receivedGimbalManagerInformation = true;
     // It is important to flag our potential gimbal manager as well, so we stop requesting gimbal_manger_information message
     PotentialGimbalManager &gimbalManager = _potentialGimbalManagers[message.compid];
-    gimbalManager.receivedGimbalManagerInformation = true;
+    gimbalManager.receivedInformation = true;
 
     _checkComplete(*gimbal, pairId);
 }
@@ -424,139 +1186,53 @@ void GimbalController::gimbalYawStop()
 
 void GimbalController::centerGimbal()
 {
-    if (!_activeGimbal) {
-        qCDebug(GimbalControllerLog) << "gimbalYawStep: active gimbal is nullptr, returning";
-        return;
-    }
-    sendPitchBodyYaw(0.0, 0.0, true);
+    sendPitchBodyYaw(0.0, 0.0);
 }
 
 void GimbalController::gimbalOnScreenControl(float panPct, float tiltPct, bool clickAndPoint, bool clickAndDrag, bool rateControl, bool retract, bool neutral, bool yawlock)
 {
     // Pan and tilt comes as +-(0-1)
-
-    if (!_activeGimbal) {
-        qCDebug(GimbalControllerLog) << "gimbalOnScreenControl: active gimbal is nullptr, returning";
-        return;
-    }
-
+    // getGimbalAttitudeData();
     if (clickAndPoint) { // based on FOV
         const float hFov = SettingsManager::instance()->gimbalControllerSettings()->CameraHFov()->rawValue().toFloat();
         const float vFov = SettingsManager::instance()->gimbalControllerSettings()->CameraVFov()->rawValue().toFloat();
 
-        const float panIncDesired = panPct * hFov * 0.5f;
+        const float panIncDesired = -panPct * hFov * 0.5f;
         const float tiltIncDesired = tiltPct * vFov * 0.5f;
 
-        const float panDesired = panIncDesired + _activeGimbal->bodyYaw()->rawValue().toFloat();
-        const float tiltDesired = tiltIncDesired + _activeGimbal->absolutePitch()->rawValue().toFloat();
+        const float panDesired = panIncDesired + currentYaw;
+        const float tiltDesired = tiltIncDesired + currentPitch;
 
-        if (_activeGimbal->yawLock()) {
-            sendPitchAbsoluteYaw(tiltDesired, panDesired + _vehicle->heading()->rawValue().toFloat(), false);
-        } else {
-            sendPitchBodyYaw(tiltDesired, panDesired, false);
-        }
-    } else if (clickAndDrag) { // based on maximum speed
+        currentYaw = panDesired;
+        currentPitch = tiltDesired;
+        // if (_activeGimbal->yawLock()) {
+        //     sendPitchAbsoluteYaw(tiltDesired, panDesired + _vehicle->heading()->rawValue().toFloat(), false);
+        // } else {
+        sendPitchBodyYaw(tiltDesired, panDesired, false);
+        // }
+    }  else if (clickAndDrag) { // based on maximum speed
         // Should send rate commands, but it seems for some reason it is not working on AP side.
         // Pitch works ok but yaw doesn't stop, it keeps like inertia, like if it was buffering the messages.
         // So we do a workaround with angle targets
         const float maxSpeed = SettingsManager::instance()->gimbalControllerSettings()->CameraSlideSpeed()->rawValue().toFloat();
 
-        const float panIncDesired = panPct * maxSpeed * 0.1f;
+        const float panIncDesired = -panPct * maxSpeed * 0.1f;
         const float tiltIncDesired = tiltPct * maxSpeed * 0.1f;
 
-        const float panDesired = panIncDesired + _activeGimbal->bodyYaw()->rawValue().toFloat();
-        const float tiltDesired = tiltIncDesired + _activeGimbal->absolutePitch()->rawValue().toFloat();
+        const float panDesired = panIncDesired + currentYaw;
+        const float tiltDesired = tiltIncDesired + currentPitch;
+        
+        // Gửi lệnh điều khiển gimbal
+        sendPitchBodyYaw(tiltDesired, panDesired, false);
 
-        if (_activeGimbal->yawLock()) {
-            sendPitchAbsoluteYaw(tiltDesired, panDesired + _vehicle->heading()->rawValue().toFloat(), false);
-        } else {
-            sendPitchBodyYaw(tiltDesired, panDesired, false);
-        }
+        // Cập nhật góc hiện tại để lần sau không gửi lại nếu không cần
+        currentYaw = panDesired;
+        currentPitch = tiltDesired;
+
     }
 }
 
-void GimbalController::sendPitchBodyYaw(float pitch, float yaw, bool showError)
-{
-    if (!_tryGetGimbalControl()) {
-        return;
-    }
 
-    _rateSenderTimer.stop();
-    _activeGimbal->setAbsolutePitch(0.0f);
-    _activeGimbal->setYawRate(0.0f);
-
-    // qCDebug(GimbalControllerLog) << "sendPitch: " << pitch << " BodyYaw: " << yaw;
-
-    const unsigned flags = GIMBAL_MANAGER_FLAGS_ROLL_LOCK
-                         | GIMBAL_MANAGER_FLAGS_PITCH_LOCK
-                         | GIMBAL_MANAGER_FLAGS_YAW_IN_VEHICLE_FRAME;
-
-    _vehicle->sendMavCommand(
-        _activeGimbal->managerCompid()->rawValue().toUInt(),
-        MAV_CMD_DO_GIMBAL_MANAGER_PITCHYAW,
-        showError,
-        pitch,
-        yaw,
-        std::numeric_limits<double>::quiet_NaN(),
-        std::numeric_limits<double>::quiet_NaN(),
-        flags,
-        0,
-        _activeGimbal->deviceId()->rawValue().toUInt());
-}
-
-void GimbalController::sendPitchAbsoluteYaw(float pitch, float yaw, bool showError)
-{
-    if (!_tryGetGimbalControl()) {
-        return;
-    }
-
-    _rateSenderTimer.stop();
-    _activeGimbal->setAbsolutePitch(0.0f);
-    _activeGimbal->setYawRate(0.0f);
-
-    if (yaw > 180.0f) {
-        yaw -= 360.0f;
-    }
-
-    if (yaw < -180.0f) {
-        yaw += 360.0f;
-    }
-
-    // qCDebug() << "sendPitch: " << pitch << " absoluteYaw: " << yaw;
-
-    const unsigned flags = GIMBAL_MANAGER_FLAGS_ROLL_LOCK
-                         | GIMBAL_MANAGER_FLAGS_PITCH_LOCK
-                         | GIMBAL_MANAGER_FLAGS_YAW_LOCK
-                         | GIMBAL_MANAGER_FLAGS_YAW_IN_EARTH_FRAME;
-
-    _vehicle->sendMavCommand(
-        _activeGimbal->managerCompid()->rawValue().toUInt(),
-        MAV_CMD_DO_GIMBAL_MANAGER_PITCHYAW,
-        showError,
-        pitch,
-        yaw,
-        std::numeric_limits<double>::quiet_NaN(),
-        std::numeric_limits<double>::quiet_NaN(),
-        flags,
-        0,
-        _activeGimbal->deviceId()->rawValue().toUInt());
-}
-
-void GimbalController::setGimbalRetract(bool set)
-{
-    if (!_tryGetGimbalControl()) {
-        return;
-    }
-
-    uint32_t flags = 0;
-    if (set) {
-        flags |= GIMBAL_DEVICE_FLAGS_RETRACT;
-    } else {
-        flags &= ~GIMBAL_DEVICE_FLAGS_RETRACT;
-    }
-
-    sendPitchYawFlags(flags);
-}
 
 void GimbalController::sendRate()
 {
@@ -598,11 +1274,11 @@ void GimbalController::_rateSenderTimeout()
     sendRate();
 }
 
-void GimbalController::setGimbalYawLock(bool set)
+void GimbalController::toggleGimbalYawLock(bool set)
 {
-    if (!_tryGetGimbalControl()) {
-        return;
-    }
+    // if (!_tryGetGimbalControl()) {
+    //     return;
+    // }
 
     // Roll and pitch are usually "locked", so with horizon and not with aircraft.
     uint32_t flags = GIMBAL_DEVICE_FLAGS_ROLL_LOCK | GIMBAL_DEVICE_FLAGS_PITCH_LOCK;
@@ -668,4 +1344,106 @@ void GimbalController::releaseGimbalControl()
         std::numeric_limits<double>::quiet_NaN(), // Reserved
         std::numeric_limits<double>::quiet_NaN(), // Reserved
         _activeGimbal->deviceId()->rawValue().toUInt());
+}
+
+
+
+void GimbalController::setCalculatedTempPointEnabled(bool enabled) {
+        if (_calculatedTempPointEnabled != enabled) {
+            _calculatedTempPointEnabled = enabled;
+            emit calculatedTempPointEnabledChanged();
+        }
+}
+
+void GimbalController::setCalculatedTempAreaEnabled(bool enabled) {
+    if (_calculatedTempAreaEnabled != enabled) {
+        _calculatedTempAreaEnabled = enabled;
+        emit calculatedTempAreaEnabledChanged();
+    }
+}
+
+void GimbalController::setCalculatedTempScreenEnabled(bool enabled) {
+    if (_calculatedTempScreenEnabled != enabled) {
+        _calculatedTempScreenEnabled = enabled;
+        emit calculatedTempScreenEnabledChanged();
+    }
+}
+
+
+void GimbalController::setAutoFocusEnabled(bool enabled) {
+    if (_autoFocusEnabled != enabled) {
+        _autoFocusEnabled = enabled;
+        emit autoFocusEnabledChanged();
+    }
+}
+
+void GimbalController::setRangeFinderEnabled(bool enabled) {
+    if (_rangeFinderEnabled != enabled) {
+        _rangeFinderEnabled = enabled;
+        emit rangeFinderEnabledChanged();
+
+        // Only send command if changed
+        if (enabled) {
+            setLaserRangingState(1);
+        } else {
+            setLaserRangingState(0);
+        }
+    }
+}
+
+
+void GimbalController::setTemperatureEnabled(bool enabled) {
+    if (_temperatureEnabled != enabled) {
+        _temperatureEnabled = enabled;
+        emit temperatureEnabled();
+    }
+}
+
+
+void GimbalController::setDistanceCalculatorEnabled(bool enabled) {
+    if (_distanceCalculatorEnabled != enabled) {
+        _distanceCalculatorEnabled = enabled;
+        emit distanceCalculatorEnabledChanged();
+
+        if (enabled) {
+            _laserDistanceTimer->start();
+        } else {
+            _laserDistanceTimer->stop();
+            _targetDistance = 0;
+            emit targetDistanceChanged();
+        }
+    }
+}
+
+void GimbalController::setTemperatureCalculatorEnabled(bool enabled) {
+    if (_temperatureCalculatorEnabled != enabled) {
+        _temperatureCalculatorEnabled = enabled;
+        emit temperatureCalculatorEnabledChanged();
+    }
+}
+
+
+void GimbalController::setManualZoomState(int value) {
+    if (_manualZoomState != value) {
+        _manualZoomState = value;
+        emit manualZoomStateChanged();
+    }
+}
+
+void GimbalController::setManualFocusState(int value) {
+    if (_manualFocusState != value) {
+        _manualFocusState = value;
+        emit manualFocusStateChanged();
+    }
+}
+
+void GimbalController::setTargetTemperaturePointX(int x) {
+    _targetTemperaturePointX = x;
+    emit targetTemperaturePointXChanged();
+}
+
+
+void GimbalController::setTargetTemperaturePointY(int y) {
+    _targetTemperaturePointY = y;
+    emit targetTemperaturePointYChanged();
 }

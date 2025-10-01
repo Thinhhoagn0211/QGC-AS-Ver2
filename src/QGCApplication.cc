@@ -49,6 +49,7 @@
 #include "VideoManager.h"
 #include "QGroundControlQmlGlobal.h"
 #include "QGCPalette.h"
+#include "QGCFileDialogController.h"
 #ifndef QGC_NO_SERIAL_LINK
 #include "SerialLink.h"
 #endif
@@ -66,7 +67,6 @@
 #include "ParameterEditorController.h"
 #include "ESP8266ComponentController.h"
 #include "ScreenToolsController.h"
-#include "QGCFileDialogController.h"
 #include "RCChannelMonitorController.h"
 #include "SyslinkComponentController.h"
 #include "AutoPilotPlugin.h"
@@ -83,6 +83,7 @@
 #include "PlanMasterController.h"
 #include "VideoReceiver.h"
 #include "LogDownloadController.h"
+#include "RemoteIDSettings.h"
 #if !defined(QGC_DISABLE_MAVLINK_INSPECTOR)
 #include "MAVLinkInspectorController.h"
 #endif
@@ -151,6 +152,15 @@
 
 #include "QGCMapEngine.h"
 
+
+
+
+static QObject* logDownloadControllerSingletonFactory(QQmlEngine* engine, QJSEngine* scriptEngine)
+{
+    LogDownloadController * logDownload = new LogDownloadController;
+    return logDownload; 
+}
+
 static QObject* qgroundcontrolQmlGlobalSingletonFactory(QQmlEngine* engine, QJSEngine* scriptEngine)
 {
     QGroundControlQmlGlobal* qmlGlobal = new QGroundControlQmlGlobal;
@@ -173,6 +183,12 @@ static QObject* shapeFileHelperSingletonFactory(QQmlEngine*, QJSEngine*)
 {
     return new ShapeFileHelper;
 }
+
+static QObject* qgcFileDialogControllerSingletonFactory(QQmlEngine*, QJSEngine*)
+{
+    return new QGCFileDialogController();
+}
+
 
 QGC_LOGGING_CATEGORY(QGCApplicationLog, "qgc.qgcapplication")
 
@@ -338,6 +354,7 @@ void QGCApplication::_registerQmlTypes()
     qRegisterMetaType<QGCOptions*>(); 
     qRegisterMetaType<QmlObjectListModel*>();
     qRegisterMetaType<ADSBVehicleManager*>();
+    qRegisterMetaType<LinkManager*>();
 
     qRegisterMetaType<const QGCOptions*>("const QGCOptions*");
     qRegisterMetaType<const QmlObjectListModel*>("const QmlObjectListModel*");
@@ -352,6 +369,8 @@ void QGCApplication::_registerQmlTypes()
     qmlRegisterType<QGCMapPalette>  ("QGroundControl.Palette", 1, 0, "QGCMapPalette");
     qmlRegisterType<QGroundControlQmlGlobal> ("QGroundControl", 1, 0, "QGroundControlQmlGlobal");
 
+    
+    qmlRegisterUncreatableType<LinkManager>             (kQGCVehicle,                       1, 0, "LinkManager",                kRefOnly);
     qmlRegisterUncreatableType<Vehicle>                 (kQGCVehicle,                       1, 0, "Vehicle",                    kRefOnly);
     qmlRegisterUncreatableType<MissionManager>          (kQGCVehicle,                       1, 0, "MissionManager",             kRefOnly);
     qmlRegisterUncreatableType<ParameterManager>        (kQGCVehicle,                       1, 0, "ParameterManager",           kRefOnly);
@@ -361,6 +380,8 @@ void QGCApplication::_registerQmlTypes()
     qmlRegisterUncreatableType<LinkInterface>           (kQGCVehicle,                       1, 0, "LinkInterface",              kRefOnly);
     qmlRegisterUncreatableType<VehicleLinkManager>      (kQGCVehicle,                       1, 0, "VehicleLinkManager",         kRefOnly);
     qmlRegisterUncreatableType<Autotune>                (kQGCVehicle,                       1, 0, "Autotune",                   kRefOnly);
+    qmlRegisterUncreatableType<RemoteIDSettings>        (kQGCVehicle,                       1, 0, "RemoteIDSettings",           kRefOnly);
+
     qmlRegisterUncreatableType<RemoteIDManager>         (kQGCVehicle,                       1, 0, "RemoteIDManager",            kRefOnly);
     qmlRegisterUncreatableType<GimbalController>        (kQGCVehicle,                       1, 0, "GimbalController",           kRefOnly);
 
@@ -368,6 +389,8 @@ void QGCApplication::_registerQmlTypes()
     qmlRegisterUncreatableType<GeoFenceController>      (kQGCControllers,                   1, 0, "GeoFenceController",         kRefOnly);
     qmlRegisterUncreatableType<RallyPointController>    (kQGCControllers,                   1, 0, "RallyPointController",       kRefOnly);
 
+    qmlRegisterUncreatableType<QGCFlyViewOptions>   (kQGroundControl,                       1, 0, "QGCFlyViewOptions",          kRefOnly);
+    qmlRegisterUncreatableType<QGCOptions>          (kQGroundControl,                       1, 0, "QGCOptions",                 kRefOnly);
     qmlRegisterUncreatableType<MissionItem>         (kQGroundControl,                       1, 0, "MissionItem",                kRefOnly);
     qmlRegisterUncreatableType<VisualMissionItem>   (kQGroundControl,                       1, 0, "VisualMissionItem",          kRefOnly);
     qmlRegisterUncreatableType<FlightPathSegment>   (kQGroundControl,                       1, 0, "FlightPathSegment",          kRefOnly);
@@ -379,7 +402,7 @@ void QGCApplication::_registerQmlTypes()
     qmlRegisterUncreatableType<SettingsManager>     (kQGroundControl,                       1, 0, "SettingsManager",            kRefOnly);
     qmlRegisterType<LogReplayLinkController>        (kQGroundControl,                       1, 0, "LogReplayLinkController");
 #if !defined(QGC_DISABLE_MAVLINK_INSPECTOR)
-    qmlRegisterUncreatableType<MAVLinkChartController> (kQGroundControl,                    1, 0, "MAVLinkChart",               kRefOnly);
+    qmlRegisterType<MAVLinkChartController> (kQGroundControl,                    1, 0, "MAVLinkChartController");
 #endif
 #if defined(QGC_ENABLE_PAIRING)
     qmlRegisterUncreatableType<PairingManager>      (kQGroundControl,                       1, 0, "PairingManager",             kRefOnly);
@@ -403,12 +426,10 @@ void QGCApplication::_registerQmlTypes()
     qmlRegisterType<MavlinkActionManager>           (kQGCControllers,          1, 0, "MavlinkActionManager");
     qmlRegisterType<ParameterEditorController>      (kQGCControllers,                       1, 0, "ParameterEditorController");
     qmlRegisterType<ESP8266ComponentController>     (kQGCControllers,                       1, 0, "ESP8266ComponentController");
-    qmlRegisterType<ScreenToolsController>          (kQGCControllers,                       1, 0, "ScreenToolsController");
+    // qmlRegisterType<ScreenToolsController>          (kQGCControllers,                       1, 0, "ScreenToolsController");
     qmlRegisterType<PlanMasterController>           (kQGCControllers,                       1, 0, "PlanMasterController");
-    qmlRegisterType<QGCFileDialogController>        (kQGCControllers,                       1, 0, "QGCFileDialogController");
     qmlRegisterType<RCChannelMonitorController>     (kQGCControllers,                       1, 0, "RCChannelMonitorController");
     qmlRegisterType<JoystickConfigController>       (kQGCControllers,                       1, 0, "JoystickConfigController");
-    qmlRegisterType<LogDownloadController>          (kQGCControllers,                       1, 0, "LogDownloadController");
     qmlRegisterType<SyslinkComponentController>     (kQGCControllers,                       1, 0, "SyslinkComponentController");
     qmlRegisterType<EditPositionDialogController>   (kQGCControllers,                       1, 0, "EditPositionDialogController");
     qmlRegisterType<RCToParamDialogController>      (kQGCControllers,                       1, 0, "RCToParamDialogController");
@@ -440,6 +461,18 @@ void QGCApplication::_registerQmlTypes()
     qmlRegisterSingletonType<QGCMAVLink>(
         "MAVLink", 1, 0, "MAVLink",
         mavlinkSingletonFactory);
+
+    qmlRegisterSingletonType<QGCFileDialogController>(
+        "QGroundControl.Controllers", 1, 0,
+        "QGCFileDialogController",
+        qgcFileDialogControllerSingletonFactory
+    );
+
+    qmlRegisterSingletonType<LogDownloadController>(
+        "QGroundControl.Controllers", 1, 0,
+        "LogDownloadController",
+        logDownloadControllerSingletonFactory
+    );
 
 }
 void QGCApplication::init()

@@ -18,7 +18,7 @@ import QGroundControl.Palette  1.0
 import QGroundControl.FactControls  1.0
 import QGroundControl.Controls  1.0
 import QGroundControl.FactSystem 1.0
-
+import QGroundControl.Vehicle 1.0
 
 
 SettingsPage {
@@ -51,7 +51,7 @@ SettingsPage {
     property var  _remoteIDManager:     _activeVehicle ? _activeVehicle.remoteIDManager : null
 
 
-    property var  remoteIDSettings:QGroundControl.settingsManager.remoteIDSettings
+    property var  remoteIDSettings:     QGroundControl.settingsManager.remoteIDSettings
     property Fact regionFact:           remoteIDSettings.region
     property Fact sendOperatorIdFact:   remoteIDSettings.sendOperatorID
     property Fact locationTypeFact:     remoteIDSettings.locationType

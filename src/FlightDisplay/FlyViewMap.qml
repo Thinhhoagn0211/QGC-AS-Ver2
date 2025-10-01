@@ -23,7 +23,6 @@ import QGroundControl.FlightMap  1.0
 import QGroundControl.ScreenTools 1.0
 
 
-
 FlightMap {
     id:                         _root
     allowGCSLocationCenter:     true
@@ -32,6 +31,7 @@ FlightMap {
     zoomLevel:                  QGroundControl.flightMapZoom
     center:                     QGroundControl.flightMapPosition
 
+    
     property Item   pipView
     property Item   pipState:                   _pipState
     property var    rightPanelWidth
@@ -237,6 +237,42 @@ FlightMap {
         }
     }
 
+    // property string previousFlightMode: ""
+
+    // function startOrbitAtLocation(coordinate) {
+    //     if (_activeVehicle) {
+    //         previousFlightMode = _activeVehicle.flightMode
+    //         guidedController.orbitAtLocation(coordinate)
+    //     }
+    // }
+
+    // Connections {
+    //     target: _activeVehicle
+
+    //     onFlightModeChanged: {
+    //         if (flightMode === "Hold" && previousFlightMode === "Mission") {
+    //             console.log("Vehicle has returned to Mission flight mode, starting mission")
+    //             guidedController.startMission()
+    //             previousFlightMode = ""
+    //         }
+    //     }
+    // }
+
+
+    Connections {
+        target: _activeVehicle
+
+        onFlightModeChanged: {
+            console.log("Flight mode changed to:", _activeVehicle.flightMode)
+        }
+
+        onMessageErrorReceived: {
+            console.warn("Error received:", message)
+        }
+    }
+
+
+
     MapFitFunctions {
         id:                         mapFitFunctions // The name for this id cannot be changed without breaking references outside of this code. Beware!
         map:                        _root
@@ -266,9 +302,9 @@ FlightMap {
 
         Connections {
             target:                             _activeVehicle ? _activeVehicle.trajectoryPoints : null
-            function onPointAdded(coordinate) { trajectoryPolyline.addCoordinate(coordinate) }
-            function onUpdateLastPoint(coordinate) { trajectoryPolyline.replaceCoordinate(trajectoryPolyline.pathLength() - 1, coordinate) }
-            function onPointsCleared() { trajectoryPolyline.path = [] }
+            onPointAdded: (coordinate) =>       trajectoryPolyline.addCoordinate(coordinate)
+            onUpdateLastPoint: (coordinate) =>  trajectoryPolyline.replaceCoordinate(trajectoryPolyline.pathLength() - 1, coordinate)
+            onPointsCleared:                    trajectoryPolyline.path = []
         }
     }
 
@@ -283,6 +319,8 @@ FlightMap {
             z:              QGroundControl.zOrderVehicles
         }
     }
+
+
     // Add distance sensor view
     MapItemView{
         model: QGroundControl.multiVehicleManager.vehicles
@@ -293,6 +331,7 @@ FlightMap {
             z:              QGroundControl.zOrderVehicles
         }
     }
+    
     // Add ADSB vehicles to the map
     MapItemView {
         model: QGroundControl.adsbVehicleManager.adsbVehicles
@@ -308,7 +347,7 @@ FlightMap {
         }
     }
 
-    // Add the items associated with each vehicles flight plan to the map
+    // // Add the items associated with each vehicles flight plan to the map
     Repeater {
         model: QGroundControl.multiVehicleManager.vehicles
 
@@ -381,7 +420,6 @@ FlightMap {
 
         property alias coordinate: _fwdFlightGotoMapCircle.center
         property alias radius: _fwdFlightGotoMapCircle.radius
-        property alias clockwiseRotation: _fwdFlightGotoMapCircle.clockwiseRotation
 
         Component.onCompleted: {
             // Only allow editing the radius, not the position
@@ -571,7 +609,7 @@ FlightMap {
 
         Connections {
             target: _activeVehicle
-            function onRoiCoordChanged(centerCoord) {
+            onRoiCoordChanged: (centerCoord) => {
                 roiLocationItem.show(centerCoord)
             }
         }
@@ -701,6 +739,7 @@ FlightMap {
                         text:               qsTr("Orbit at location")
                         visible:            globals.guidedControllerFlyView.showOrbit
                         onClicked: {
+                            // previousFlightMode = "Mission"
                             mapClickDropPanel.close()
                             orbitMapCircle.show(mapClickCoord)
                             globals.guidedControllerFlyView.confirmAction(globals.guidedControllerFlyView.actionOrbit, mapClickCoord, orbitMapCircle)
@@ -758,30 +797,146 @@ FlightMap {
     }
 
     onMapClicked: (position) => {
-        if (!globals.guidedControllerFlyView.guidedUIVisible && 
-            (globals.guidedControllerFlyView.showGotoLocation || globals.guidedControllerFlyView.showOrbit ||
-             globals.guidedControllerFlyView.showROI || globals.guidedControllerFlyView.showSetHome ||
-             globals.guidedControllerFlyView.showSetEstimatorOrigin)) {
+        if (globals.selectedView === 1) {
+            _root.focus = true
+                if (!mainWindow.allowViewSwitch()) {
+                    return
+                }
+                var coordinate = _root.toCoordinate(Qt.point(position.x, position.y), false /* clipToViewPort */)
+                coordinate.latitude = coordinate.latitude.toFixed(_decimalPlaces)
+                coordinate.longitude = coordinate.longitude.toFixed(_decimalPlaces)
+                coordinate.altitude = coordinate.altitude.toFixed(_decimalPlaces)
+                insertSimpleItemAfterCurrent(coordinate)
+        } else {
+            if (!globals.guidedControllerFlyView.guidedUIVisible && 
+                (globals.guidedControllerFlyView.showGotoLocation || globals.guidedControllerFlyView.showOrbit ||
+                globals.guidedControllerFlyView.showROI || globals.guidedControllerFlyView.showSetHome ||
+                globals.guidedControllerFlyView.showSetEstimatorOrigin)) {
 
-            position = Qt.point(position.x, position.y)
-            var clickCoord = _root.toCoordinate(position, false /* clipToViewPort */)
-            // For some strange reason using mainWindow in mapToItem doesn't work, so we use globals.parent instead which also gets us mainWindow
-            position = _root.mapToItem(globals.parent, position)
-            var dropPanel = mapClickDropPanelComponent.createObject(mainWindow, { mapClickCoord: clickCoord, clickRect: Qt.rect(position.x, position.y, 0, 0) })
-            dropPanel.open()
+                position = Qt.point(position.x, position.y)
+                var clickCoord = _root.toCoordinate(position, false /* clipToViewPort */)
+                // For some strange reason using mainWindow in mapToItem doesn't work, so we use globals.parent instead which also gets us mainWindow
+                position = _root.mapToItem(globals.parent, position)
+                var dropPanel = mapClickDropPanelComponent.createObject(mainWindow, { mapClickCoord: clickCoord, clickRect: Qt.rect(position.x, position.y, 0, 0) })
+                dropPanel.open()
+            }
         }
     }
 
-    MapScale {
-        id:                 mapScale
-        anchors.margins:    _toolsMargin
-        anchors.left:       parent.left
-        anchors.top:        parent.top
-        mapControl:         _root
-        buttonsOnLeft:      true
-        visible:            !ScreenTools.isTinyScreen && QGroundControl.corePlugin.options.flyView.showMapScale && mapControl.pipState.state === mapControl.pipState.windowState
-
-        property real centerInset: visible ? parent.height - y : 0
+    // Add the mission item visuals to the map
+    Repeater {
+        model: _missionController.visualItems
+        delegate: MissionItemMapVisual {
+            map:         _root
+            opacity:     _editingLayer == _layerMission  ? 1 : _nonInteractiveOpacity
+            interactive: _editingLayer == _layerMission 
+            vehicle:     _planMasterController.controllerVehicle
+            onClicked:   (sequenceNumber) => { 
+                console.log("Mission item clicked: " + sequenceNumber)
+                _missionController.setCurrentPlanViewSeqNum(sequenceNumber, false) 
+                }
+        }
     }
+
+    // Add lines between waypoints
+    MissionLineView {
+        showSpecialVisual:  _missionController.isROIBeginCurrentItem
+        model:              _missionController.simpleFlightPathSegments
+        opacity:            _editingLayer == _layerMission  ? 1 : _root._nonInteractiveOpacity
+    }
+
+    // Direction arrows in waypoint lines
+    MapItemView {
+        model: _editingLayer == _layerMission ? _missionController.directionArrows : undefined
+
+        delegate: MapLineArrow {
+            fromCoord:      object ? object.coordinate1 : undefined
+            toCoord:        object ? object.coordinate2 : undefined
+            arrowPosition:  3
+            z:              QGroundControl.zOrderWaypointLines + 1
+        }
+    }
+
+    // Incomplete segment lines
+    MapItemView {
+        model: _missionController.incompleteComplexItemLines
+
+        delegate: MapPolyline {
+            path:       [ object.coordinate1, object.coordinate2 ]
+            line.width: 1
+            line.color: "red"
+            z:          QGroundControl.zOrderWaypointLines
+            opacity:    _editingLayer == _layerMission ? 1 : _root._nonInteractiveOpacity
+        }
+    }
+
+    // UI for splitting the current segment
+    MapQuickItem {
+        id:             splitSegmentItem
+        anchorPoint.x:  sourceItem.width / 2
+        anchorPoint.y:  sourceItem.height / 2
+        z:              QGroundControl.zOrderWaypointLines + 1
+        visible:        _editingLayer == _layerMission
+
+        sourceItem: SplitIndicator {
+            onClicked:  _missionController.insertSimpleMissionItem(splitSegmentItem.coordinate,
+                                                                    _missionController.currentPlanViewVIIndex,
+                                                                    true /* makeCurrentItem */)
+        }
+
+        function _updateSplitCoord() {
+            if (_missionController.splitSegment) {
+                var distance = _missionController.splitSegment.coordinate1.distanceTo(_missionController.splitSegment.coordinate2)
+                var azimuth = _missionController.splitSegment.coordinate1.azimuthTo(_missionController.splitSegment.coordinate2)
+                splitSegmentItem.coordinate = _missionController.splitSegment.coordinate1.atDistanceAndAzimuth(distance / 2, azimuth)
+            } else {
+                coordinate = QtPositioning.coordinate()
+            }
+        }
+
+        Connections {
+            target:                 _missionController
+            function onSplitSegmentChanged()  { splitSegmentItem._updateSplitCoord() }
+        }
+
+        Connections {
+            target:                 _missionController.splitSegment
+            function onCoordinate1Changed()   { splitSegmentItem._updateSplitCoord() }
+            function onCoordinate2Changed()   { splitSegmentItem._updateSplitCoord() }
+        }
+    }
+
+    
+
+    GeoFenceMapVisuals {
+        map:                    _root
+        myGeoFenceController:   _geoFenceController
+        interactive:            _editingLayer == _layerGeoFence
+        homePosition:           _missionController.plannedHomePosition
+        planView:               true
+        opacity:                _editingLayer != _layerGeoFence ? _nonInteractiveOpacity : 1
+    }
+
+    RallyPointMapVisuals {
+        map:                    _root
+        myRallyPointController: _rallyPointController
+        interactive:            _editingLayer == _layerRallyPoints
+        planView:               true
+        opacity:                _editingLayer != _layerRallyPoints ? _nonInteractiveOpacity : 1
+    }
+
+
+    // MapScale {
+    //     id:                 mapScale
+    //     anchors.margins:    _toolsMargin
+    //     anchors.left:       parent.left
+    //     anchors.top:        parent.top
+    //     mapControl:         _root
+    //     buttonsOnLeft:      true
+    //     visible:            !ScreenTools.isTinyScreen && QGroundControl.corePlugin.options.flyView.showMapScale && mapControl.pipState.state === mapControl.pipState.windowState
+
+    //     property real centerInset: visible ? parent.height - y : 0
+    // }
+    
 
 }

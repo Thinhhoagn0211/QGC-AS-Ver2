@@ -7,6 +7,7 @@ include_directories(
 	${CMAKE_CURRENT_BINARY_DIR}
 	${Qt5Location_PRIVATE_INCLUDE_DIRS}
 	VideoManager
+	UTMSP
 )
 
 set(EXTRA_SRC)
@@ -65,7 +66,6 @@ target_link_libraries(qgc
 		AnalyzeView
 		# Android
         API
-		
         
 		Comms
 		FactGroups
@@ -104,6 +104,7 @@ target_link_libraries(qgc
 		ComponentInfomation
 		MockLink
 		AirLink
+		
 		z # zlib
 )
 

@@ -4,6 +4,7 @@ import QtQuick.Controls 2.2
 import QGroundControl 1.0
 import QGroundControl.Controls  1.0
 import QGroundControl.ScreenTools 1.0
+import QGroundControl.Palette 1.0
 
 Item {
     id:             _joyRoot
@@ -26,14 +27,16 @@ Item {
     property real   stickPositionX:         _centerXY
     property real   stickPositionY:         !yAxisReCenter ? height : height / 2
     property bool   alredyCreated:          false
-    
+    signal stickMoved()
     QGCMapPalette { id: mapPal }
 
     onStickPositionXChanged:            calculateXAxis()
     onStickPositionYChanged:            calculateYAxis()
     onYAxisPositiveRangeOnlyChanged:    calculateYAxis()
     onYAxisReCenterChanged:             yAxisReCentered()     
-    
+    onXAxisChanged: stickMoved()
+    onYAxisChanged: stickMoved()
+
     function yAxisReCentered() {
         if( yAxisReCenter ) {
             yAxis = yAxisPositiveRangeOnly ? 0.5 : 0

@@ -22,7 +22,7 @@ import QGroundControl.Controls  1.0
 import QGroundControl.ScreenTools 1.0
 import QGroundControl.FlightDisplay  1.0
 import QGroundControl.FlightMap  1.0
-
+import QGroundControl.Controllers 1.0
 
 
 
@@ -30,13 +30,16 @@ import QGroundControl.FlightMap  1.0
 Item {
     id: _root
 
+    
+    property int selectedButton: 1
     property var    parentToolInsets
     property var    totalToolInsets:        _totalToolInsets
-    property var    mapControl
     property bool   isViewer3DOpen:         false
 
+    property var mapControl
     property var    _activeVehicle:         QGroundControl.multiVehicleManager.activeVehicle
-    property var    _planMasterController:  globals.planMasterControllerFlyView
+    property var    planMasterController
+    property var    _planMasterController:  planMasterController
     property var    _missionController:     _planMasterController.missionController
     property var    _geoFenceController:    _planMasterController.geoFenceController
     property var    _rallyPointController:  _planMasterController.rallyPointController
@@ -49,8 +52,7 @@ Item {
     property real   _layoutMargin:          ScreenTools.defaultFontPixelWidth * 0.75
     property bool   _layoutSpacing:         ScreenTools.defaultFontPixelWidth
     property bool   _showSingleVehicleUI:   true
-
-    property bool utmspActTrigger
+    property var flyViewVideoMouseArea
 
     QGCToolInsets {
         id:                     _totalToolInsets
@@ -68,6 +70,7 @@ Item {
         bottomEdgeRightInset:   virtualJoystickMultiTouch.visible ? virtualJoystickMultiTouch.bottomEdgeRightInset : bottomRightRowLayout.bottomEdgeRightInset
     }
 
+    
     FlyViewTopRightPanel {
         id:                     topRightPanel
         anchors.top:            parent.top
@@ -81,26 +84,254 @@ Item {
         property real rightEdgeCenterInset: rightEdgeTopInset
     }
 
-    FlyViewTopRightColumnLayout {
-        id:                 topRightColumnLayout
-        anchors.margins:    _layoutMargin
-        anchors.top:        parent.top
-        anchors.bottom:     bottomRightRowLayout.top
-        anchors.right:      parent.right
-        spacing:            _layoutSpacing
-        visible:           !topRightPanel.visible
+    Rectangle {
+        id: panel
+        width: parent.width * 0.3
+        height: collapsed ? (buttonRow.implicitHeight + _toolsMargin * 2)
+                        : parent.height * 0.3
+        color: collapsed ? "transparent" : "lightgray"
+        radius: 5 * scale
+        anchors.right: bottomRightRowLayout.right
+        anchors.top: parent.top
+        anchors.margins: _toolsMargin
+        visible: _activeVehicle !== null && !_activeVehicle.usingHighLatencyLink
+        property bool collapsed: false  
+        property int  selectedPage: 1
+        property real btnHeightFac: 0.5
 
-        property real topEdgeRightInset:    childrenRect.height + _layoutMargin
-        property real rightEdgeTopInset:    width + _layoutMargin
-        property real rightEdgeCenterInset: rightEdgeTopInset
+        property real basePanelW: 480
+        property real basePanelH: 260
+        property real contentScale: Math.min(1.0, Math.min(width / basePanelW, height / basePanelH))
+
+        property real headerScale: Math.min(1.0, width / basePanelW)
+
+        QtObject {
+            id: ui
+            property real btnH: panel.height * 0.2         
+            property real btnFont: btnH * 0.2            
+            property real btnRadius: btnH * 0.2
+            property real btnPad: btnH * 0.2 
+        }
+
+        Row {
+            id: buttonRow
+            spacing: 10
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.right: collapseBtn.left
+            anchors.topMargin: 8
+            anchors.leftMargin: _toolsMargin
+            anchors.rightMargin: _toolsMargin
+            visible: !panel.collapsed 
+
+            QGCButton {
+                id: btnFunction
+                text: qsTr("Function")
+                checkable: true
+                checked: panel.selectedPage === 1
+                enabled: !panel.collapsed
+
+                width: (buttonRow.width - buttonRow.spacing) / 2
+                height: ui.btnH
+                pointSize:      ui.btnFont
+                backRadius:     ui.btnRadius
+                leftPadding:    ui.btnPad
+                rightPadding:   ui.btnPad
+
+                onClicked: {
+                    globals.selectedView = 0
+                    // _planMasterController.flyView = true
+                    mapControl.planView = false
+                    panel.selectedPage = 1
+                }
+            }
+            QGCButton {
+                id: btnPlan
+                text: qsTr("Plan flight")
+                checkable: true
+                checked: panel.selectedPage === 2
+                enabled: !panel.collapsed
+
+                width: (buttonRow.width - buttonRow.spacing) / 2
+                height: ui.btnH
+                pointSize: ui.btnFont
+                backRadius: ui.btnRadius
+                leftPadding: ui.btnPad
+                rightPadding: ui.btnPad
+
+                onClicked: {
+                    globals.selectedView = 1
+                    panel.selectedPage = 2
+                    // _planMasterController.flyView = false
+                    mapControl.planView = true
+                    insertTakeItemAfterCurrent()
+                }
+            }
+        }
+
+        QGCButton {
+            id: collapseBtn
+            anchors.top: parent.top
+            anchors.right: parent.right
+            text: panel.collapsed ? "▼" : "▲"
+            onClicked: panel.collapsed = !panel.collapsed
+        }
+        
+        Rectangle {
+            id: divider
+            anchors.top: buttonRow.bottom
+            anchors.topMargin: 8
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.leftMargin: _toolsMargin
+            anchors.rightMargin: _toolsMargin
+            width: panel.width - 2 * _toolsMargin
+            height: 1
+            color: "white"
+            visible: !panel.collapsed
+        }
+
+        ScrollView {
+            id: scroller
+            visible: !panel.collapsed
+            anchors.top: divider.bottom
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            clip: true
+            contentWidth: width
+
+            ScrollBar.horizontal.policy: ScrollBar.AlwaysOn
+            ScrollBar.vertical.policy: ScrollBar.AsNeeded
+
+            Loader {
+                id: pageLoader
+                active: scroller.visible
+                sourceComponent: panel.selectedPage === 1 ? pageOne : pageTwo
+
+                onLoaded: {
+                    if (item) {
+                        scroller.contentItem.contentWidth  = Math.max(item.width, scroller.width)
+                        scroller.contentItem.contentHeight = Math.max(item.height, scroller.height)
+                    }
+                }
+            }
+        }
+
+        
+        Component {
+            id: pageOne
+            Item {
+                width: scroller.width
+                height: content.implicitHeight
+                PageShowTelemetryUAV {
+                    id: content
+                    anchors.fill: parent
+                    anchors.margins: 5
+                    width: Math.min(420 * panel.contentScale, parent.width - 2 * _toolsMargin)
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.top: parent.top
+                    btnH: ui.btnH
+                    btnFont: ui.btnFont
+                    btnRadius: ui.btnRadius
+                    btnPad: ui.btnPad
+                    activeVehicle: _activeVehicle
+                    guidedController: _guidedController
+                }
+            }
+        }
+
+
+        // --- Page 2 ---
+        Component {
+            id: pageTwo
+            // Item {
+            Item {
+                width: scroller.width
+                height: content.implicitHeight
+
+                PageShowPlanFlightUAV {
+                    id: content
+                    width: Math.min(420 * panel.contentScale, parent.width - 2 * _toolsMargin)
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.top: parent.top
+                    btnH: ui.btnH
+                    btnFont: ui.btnFont
+                    btnRadius: ui.btnRadius
+                    btnPad: ui.btnPad
+                    mapControl:           _mapControl
+                    planMasterController: _planMasterController
+                }
+            }
+        }
     }
 
-    FlyViewBottomRightRowLayout {
+    Rectangle {
+        id: redRect
+        width: bottomRightRowLayout.width * 1.5
+        height: parent.height * 0.1 
+        color: "transparent"
+
+        anchors.right: bottomRightRowLayout.right
+        anchors.bottom: bottomRightRowLayout.top
+        anchors.margins: _toolsMargin
+
+        RowLayout {
+            id: innerRow
+            anchors.fill: parent
+            anchors.margins: _toolsMargin
+            spacing: _toolsMargin
+
+            InfoBadge {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                radius: ScreenTools.defaultFontPixelHeight
+                color: "#f39c12"
+                iconSource: "/res/time.svg"
+                title: qsTr("Time Elapsed")
+                value: (_activeVehicle && _activeVehicle.flightTime.valueString) ? _activeVehicle.flightTime.valueString : "23:36:00"
+            }
+
+            InfoBadge {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                radius:  ScreenTools.defaultFontPixelHeight
+                color: "#2980b9"
+                iconSource: "/res/home.svg"
+                title: qsTr("Home Distance")
+                value: (_activeVehicle && _activeVehicle.distanceToHome) ? _activeVehicle.distanceToHome.rawValue.toFixed(1) + "m" : qsTr("--.--")
+            }
+
+            InfoBadge {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                radius:  ScreenTools.defaultFontPixelHeight
+                color: "#27ae60"
+                iconSource: "/res/TotalDistance.svg"
+                title: qsTr("Total Distance")
+                value: (_activeVehicle && _activeVehicle.flightDistance) ? _activeVehicle.flightDistance.rawValue.toFixed(1) + "m" : "0 m"
+            }
+
+            InfoBadge {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                radius:  ScreenTools.defaultFontPixelHeight
+                color: "#7f8c8d"
+                iconSource: "/res/NextWaypoint.svg"
+                title: "WP #" + (_missionController ? _missionController.currentMissionIndex : "0")
+                value: (_activeVehicle && _activeVehicle.distanceToNextWP) ? _activeVehicle.distanceToNextWP.rawValue.toFixed(1) + "m" : "0 m"
+            }
+        }
+    }
+
+
+    FlyViewInstrumentPanel {
         id:                 bottomRightRowLayout
         anchors.margins:    _layoutMargin
         anchors.bottom:     parent.bottom
         anchors.right:      parent.right
         spacing:            _layoutSpacing
+        visible:            _activeVehicle 
 
         property real bottomEdgeRightInset:     height + _layoutMargin
         property real bottomEdgeCenterInset:    bottomEdgeRightInset
@@ -120,9 +351,9 @@ Item {
         z:                          QGroundControl.zOrderTopMost
         guidedController:           _guidedController
         guidedValueSlider:          _guidedValueSlider
-        utmspSliderTrigger:         utmspActTrigger
     }
-
+    
+    
     //-- Virtual Joystick
     Loader {
         id:                         virtualJoystickMultiTouch
@@ -130,20 +361,21 @@ Item {
         anchors.right:              parent.right
         anchors.rightMargin:        anchors.leftMargin
         height:                     Math.min(parent.height * 0.25, ScreenTools.defaultFontPixelWidth * 16)
-        visible:                    _virtualJoystickEnabled && !QGroundControl.videoManager.fullScreen && !(_activeVehicle ? _activeVehicle.usingHighLatencyLink : false)
+        visible:                    !QGroundControl.videoManager.fullScreen && !(_activeVehicle ? _activeVehicle.usingHighLatencyLink : false)
         anchors.bottom:             parent.bottom
         anchors.bottomMargin:       bottomLoaderMargin
-        anchors.left:               parent.left   
-        anchors.leftMargin:         ( y > toolStrip.y + toolStrip.height ? toolStrip.width / 2 : toolStrip.width * 1.05 + toolStrip.x) 
+        anchors.left:               parent.left
+        anchors.leftMargin: ( y > toolStrip.y + toolStrip.height
+                          ? toolStrip.width / 2
+                          : toolStrip.width * 1.05 + toolStrip.x ) + 10
         source:                     "qrc:/qml/QGroundControl/FlightDisplay/VirtualJoystick.qml"
-        active:                     _virtualJoystickEnabled && !(_activeVehicle ? _activeVehicle.usingHighLatencyLink : false)
+        active:                      !(_activeVehicle ? _activeVehicle.usingHighLatencyLink : false)
 
         property real bottomEdgeLeftInset:     parent.height-y
         property bool autoCenterThrottle:      QGroundControl.settingsManager.appSettings.virtualJoystickAutoCenterThrottle.rawValue
         property bool leftHandedMode:          QGroundControl.settingsManager.appSettings.virtualJoystickLeftHandedMode.rawValue
-        property bool _virtualJoystickEnabled: QGroundControl.settingsManager.appSettings.virtualJoystick.rawValue
         property real bottomEdgeRightInset:    parent.height-y
-        property var  _pipViewMargin:          _pipView.visible ? parentToolInsets.bottomEdgeLeftInset + ScreenTools.defaultFontPixelHeight * 2 : 
+        property var  _pipViewMargin:          _pipView.visible ? parentToolInsets.bottomEdgeLeftInset + ScreenTools.defaultFontPixelHeight * 2 :
                                                bottomRightRowLayout.height + ScreenTools.defaultFontPixelHeight * 1.5
 
         property var  bottomLoaderMargin:      _pipViewMargin >= parent.height / 2 ? parent.height / 2 : _pipViewMargin
@@ -160,7 +392,7 @@ Item {
         //Loader status logic
         onLoaded: {
             if (virtualJoystickMultiTouch.visible) {
-                virtualJoystickMultiTouch.item.calibration = true 
+                virtualJoystickMultiTouch.item.calibration = true
                 virtualJoystickMultiTouch.item.uiTotalWidth = rootWidth
                 virtualJoystickMultiTouch.item.uiRealX = itemX
             } else {
@@ -178,7 +410,6 @@ Item {
         z:                      QGroundControl.zOrderWidgets
         maxHeight:              parent.height - y - parentToolInsets.bottomEdgeLeftInset - _toolsMargin
         visible:                !QGroundControl.videoManager.fullScreen
-
         onDisplayPreFlightChecklist: {
             if (!preFlightChecklistLoader.active) {
                 preFlightChecklistLoader.active = true
@@ -189,7 +420,7 @@ Item {
         property real topEdgeLeftInset:     visible ? y + height : 0
         property real leftEdgeTopInset:     visible ? x + width : 0
         property real leftEdgeCenterInset:  leftEdgeTopInset
-    }
+    }  
 
     GripperMenu {
         id: gripperOptions
@@ -211,7 +442,7 @@ Item {
 
         property real topEdgeCenterInset: visible ? y + height : 0
     }
-
+    
     Loader {
         id: preFlightChecklistLoader
         sourceComponent: preFlightChecklistPopup

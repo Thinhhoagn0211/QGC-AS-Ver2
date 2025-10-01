@@ -14,7 +14,7 @@ import QtQuick.Layouts 1.2
 import QGroundControl 1.0
 import QGroundControl.Controls  1.0
 import QGroundControl.ScreenTools 1.0
-
+import QGroundControl.Controllers 1.0
 
 AnalyzePage {
     id: root

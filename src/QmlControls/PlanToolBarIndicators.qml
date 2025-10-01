@@ -8,7 +8,6 @@ import QGroundControl 1.0
 import QGroundControl.Controls  1.0
 import QGroundControl.FactControls  1.0
 import QGroundControl.ScreenTools 1.0
-// import QGroundControl.UTMSP
 
 // Toolbar for Plan View
 Item {
@@ -69,8 +68,6 @@ Item {
 
     readonly property real _margins: ScreenTools.defaultFontPixelWidth
 
-    // Properties of UTM adapter
-    property bool   _utmspEnabled:                       QGroundControl.utmspSupported
 
     function getMissionTime() {
         if (!_missionTime) {
@@ -100,15 +97,10 @@ Item {
         QGCButton {
             id:          uploadButton
             text:        _controllerDirty ? qsTr("Upload Required") : qsTr("Upload")
-            enabled:     _utmspEnabled ? !_controllerSyncInProgress && UTMSPStateStorage.enableMissionUploadButton : !_controllerSyncInProgress
+            enabled:     true
             visible:     !_controllerOffline && !_controllerSyncInProgress
             primary:     _controllerDirty
             onClicked: {
-                if (_utmspEnabled) {
-                    QGroundControl.utmspManager.utmspVehicle.triggerActivationStatusBar(true);
-                    UTMSPStateStorage.removeFlightPlanState = true
-                    UTMSPStateStorage.indicatorDisplayStatus = true
-                }
                 _planMasterController.upload();
             }
 

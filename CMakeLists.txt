@@ -140,6 +140,13 @@ find_package(Qt5 ${QT_VERSION}
 		${QT_LIBRARY_HINTS}
 )
 
+find_package(OpenCV REQUIRED)
+
+if(OpenCV_FOUND)
+    include_directories(${OpenCV_INCLUDE_DIRS})
+
+endif()
+
 if(NOT QT_MKSPEC MATCHES "winrt")
 	find_package(Qt5 ${QT_VERSION}
 		COMPONENTS
@@ -178,7 +185,6 @@ set(QGC_RESOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/FirmwarePlugin/APM/APMResources.qrc
 	${CMAKE_CURRENT_SOURCE_DIR}/src/FirmwarePlugin/PX4/PX4Resources.qrc
 	${CMAKE_CURRENT_SOURCE_DIR}/VideoReceiverApp/qml.qrc
-	${CMAKE_CURRENT_SOURCE_DIR}/src/UTMSP/UTMSP.qrc
 	)
 
 if (WIN32)
@@ -195,6 +201,10 @@ else()
 endif()
 
 target_link_libraries(QGroundControl PUBLIC qgc)
+
+if(OpenCV_FOUND)
+    target_link_libraries(QGroundControl PUBLIC ${OpenCV_LIBS})
+endif()
 
 # Files/directories to install
 install(

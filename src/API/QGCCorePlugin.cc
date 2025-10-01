@@ -259,7 +259,6 @@ QQmlApplicationEngine *QGCCorePlugin::createQmlApplicationEngine(QObject *parent
     QQmlApplicationEngine *const qmlEngine = new QQmlApplicationEngine(parent);
     qmlEngine->addImportPath("qrc:/qml");
     qmlEngine->addImportPath("C:/Qt/5.15.2/msvc2019_64/qml");
-    qDebug() << "Current import paths:" << qmlEngine->importPathList();
     qmlEngine->rootContext()->setContextProperty(QStringLiteral("joystickManager"), JoystickManager::instance());
     qmlEngine->rootContext()->setContextProperty(QStringLiteral("debugMessageModel"), QGCLogging::instance());
     return qmlEngine;

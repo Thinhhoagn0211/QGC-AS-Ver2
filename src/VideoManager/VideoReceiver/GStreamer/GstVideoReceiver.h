@@ -15,12 +15,24 @@
 #include <QtCore/QThread>
 #include <QtCore/QTimer>
 #include <QtCore/QWaitCondition>
-
+#include <queue>
+#include <mutex>
+#include <thread>
 #include <glib.h>
 #include <gst/gstelement.h>
 #include <gst/gstpad.h>
 
+#include <opencv2/opencv.hpp>
+#include <opencv2/dnn.hpp>
+
+#include <gst/gst.h>
+
 #include "VideoReceiver.h"
+
+using namespace cv;
+using namespace dnn;
+using namespace std;
+
 
 Q_DECLARE_LOGGING_CATEGORY(GstVideoReceiverLog)
 
@@ -122,4 +134,17 @@ private:
         "qtmux",
         "mp4mux"
     };
+
+    queue<cv::Mat> _frameQueue;
+    mutex _queueMutex;
+    condition_variable _queueCond;
+    std::thread _yoloThread;
+    bool _yoloThreadRunning = false;
+    vector<cv::Rect> _lastBoxes;
+    mutex _detMutex;
+    Net _yoloNet;
+    vector<string> class_list;
+    vector<std::string> _classNames;
+    bool _yoloLoaded = false;
+    void runYolo(cv::Mat& frame, int frameId);
 };

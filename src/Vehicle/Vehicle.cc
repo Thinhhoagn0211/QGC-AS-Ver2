@@ -58,10 +58,6 @@
 #include "MavlinkSettings.h"
 #include "APM.h"
 
-#ifdef QGC_UTM_ADAPTER
-#include "UTMSPVehicle.h"
-#include "UTMSPManager.h"
-#endif
 #ifdef QT_DEBUG
 #include "MockLink.h"
 #endif
@@ -148,9 +144,6 @@ Vehicle::Vehicle(LinkInterface*             link,
         SettingsManager::instance()->videoSettings()->lowLatencyMode()->setRawValue(true);
     }
 
-#ifdef QGC_UTM_ADAPTER
-    _utmspVehicle = UTMSPManager::instance()->instantiateVehicle(this);
-#endif
 
     _autopilotPlugin = _firmwarePlugin->autopilotPlugin(this);
     _autopilotPlugin->setParent(this);

@@ -20,7 +20,6 @@ GuidedActionList                1.0 GuidedActionList.qml
 GuidedActionPause               1.0 GuidedActionPause.qml
 GuidedActionRTL                 1.0 GuidedActionRTL.qml
 GuidedValueSlider               1.0 GuidedValueSlider.qml
-GuidedActionTakeoff             1.0 GuidedActionTakeoff.qml
 GuidedActionGripper             1.0 GuidedActionGripper.qml
 GuidedToolStripAction           1.0 GuidedToolStripAction.qml
 MultiVehicleList                1.0 MultiVehicleList.qml
@@ -48,3 +47,15 @@ FlyViewAdditionalActionsList    1.0 FlyViewAdditionalActionsList.qml
 FlyViewAdditionalCustomActionsList    1.0 FlyViewAdditionalCustomActionsList.qml
 FlyViewAdditionalActionsPanel          1.0 FlyViewAdditionalActionsPanel.qml
 CustomGuidedActionsController           1.0 CustomGuidedActionsController.qml
+PageShowPlanFlightUAV           1.0 PageShowPlanFlightUAV.qml
+PageShowTelemetryUAV            1.0 PageShowTelemetryUAV.qml
+GuidedActionScope               1.0 GuidedActionScope.qml
+GuidedActionTakeoff             1.0 GuidedActionTakeoff.qml
+GuidedActionConnect             1.0 GuidedActionConnect.qml
+GuidedActionGimbal              1.0 GuidedActionGimbal.qml
+GuidedActionZoomIn              1.0 GuidedActionZoomIn.qml
+GuidedActionZoomOut             1.0 GuidedActionZoomOut.qml
+GuidedActionPlan                1.0 GuidedActionPlan.qml
+GuidedOpenSettings              1.0 GuidedOpenSettings.qml
+GuidedActionPhotoVideo          1.0 GuidedActionPhotoVideo.qml
+InfoBadge                       1.0 InfoBadge.qml

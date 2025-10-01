@@ -16,6 +16,7 @@ static void mavlink_test_ardupilotmega(uint8_t, uint8_t, mavlink_message_t *last
 static void mavlink_test_ASLUAV(uint8_t, uint8_t, mavlink_message_t *last_msg);
 static void mavlink_test_common(uint8_t, uint8_t, mavlink_message_t *last_msg);
 static void mavlink_test_development(uint8_t, uint8_t, mavlink_message_t *last_msg);
+static void mavlink_test_gimbal(uint8_t, uint8_t, mavlink_message_t *last_msg);
 static void mavlink_test_icarous(uint8_t, uint8_t, mavlink_message_t *last_msg);
 static void mavlink_test_minimal(uint8_t, uint8_t, mavlink_message_t *last_msg);
 static void mavlink_test_python_array_test(uint8_t, uint8_t, mavlink_message_t *last_msg);
@@ -27,6 +28,7 @@ static void mavlink_test_storm32(uint8_t, uint8_t, mavlink_message_t *last_msg);
 static void mavlink_test_AVSSUAS(uint8_t, uint8_t, mavlink_message_t *last_msg);
 static void mavlink_test_cubepilot(uint8_t, uint8_t, mavlink_message_t *last_msg);
 static void mavlink_test_csAirLink(uint8_t, uint8_t, mavlink_message_t *last_msg);
+static void mavlink_test_marsh(uint8_t, uint8_t, mavlink_message_t *last_msg);
 static void mavlink_test_all(uint8_t, uint8_t, mavlink_message_t *last_msg);
 
 static void mavlink_test_all(uint8_t system_id, uint8_t component_id, mavlink_message_t *last_msg)
@@ -35,6 +37,7 @@ static void mavlink_test_all(uint8_t system_id, uint8_t component_id, mavlink_me
     mavlink_test_ASLUAV(system_id, component_id, last_msg);
     mavlink_test_common(system_id, component_id, last_msg);
     mavlink_test_development(system_id, component_id, last_msg);
+    mavlink_test_gimbal(system_id, component_id, last_msg);
     mavlink_test_icarous(system_id, component_id, last_msg);
     mavlink_test_minimal(system_id, component_id, last_msg);
     mavlink_test_python_array_test(system_id, component_id, last_msg);
@@ -46,6 +49,7 @@ static void mavlink_test_all(uint8_t system_id, uint8_t component_id, mavlink_me
     mavlink_test_AVSSUAS(system_id, component_id, last_msg);
     mavlink_test_cubepilot(system_id, component_id, last_msg);
     mavlink_test_csAirLink(system_id, component_id, last_msg);
+    mavlink_test_marsh(system_id, component_id, last_msg);
     mavlink_test_all(system_id, component_id, last_msg);
 }
 #endif
@@ -54,6 +58,7 @@ static void mavlink_test_all(uint8_t system_id, uint8_t component_id, mavlink_me
 #include "../ASLUAV/testsuite.h"
 #include "../common/testsuite.h"
 #include "../development/testsuite.h"
+#include "../gimbal/testsuite.h"
 #include "../icarous/testsuite.h"
 #include "../minimal/testsuite.h"
 #include "../python_array_test/testsuite.h"
@@ -65,6 +70,7 @@ static void mavlink_test_all(uint8_t system_id, uint8_t component_id, mavlink_me
 #include "../AVSSUAS/testsuite.h"
 #include "../cubepilot/testsuite.h"
 #include "../csAirLink/testsuite.h"
+#include "../marsh/testsuite.h"
 
 
 

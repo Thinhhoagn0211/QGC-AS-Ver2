@@ -20,6 +20,7 @@ import QGroundControl.ScreenTools 1.0
 
 
 
+
 Rectangle {
     id:     _root
     width:  parent.width
@@ -50,7 +51,7 @@ Rectangle {
         anchors.fill: viewButtonRow
         
         gradient: Gradient {
-            // orientation: Gradient.Horizontal
+            orientation: Gradient.Horizontal
             GradientStop { position: 0;                                     color: _mainStatusBGColor }
             GradientStop { position: currentButton.x + currentButton.width; color: _mainStatusBGColor }
             GradientStop { position: 1;                                     color: _root.color }

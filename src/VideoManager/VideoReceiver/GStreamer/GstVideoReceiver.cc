@@ -24,7 +24,13 @@
 #include <QtCore/QDateTime>
 #include <QtCore/QUrl>
 #include <QtQuick/QQuickItem>
-
+#include <fstream>
+#include <thread>
+#include <QDebug>
+#include <QUrl>
+#include <filesystem>
+#include <QDateTime>
+#include <QSysInfo>
 #include <gst/gst.h>
 
 QGC_LOGGING_CATEGORY(GstVideoReceiverLog, "qgc.videomanager.videoreceiver.gstreamer.gstvideoreceiver")
@@ -34,6 +40,20 @@ GstVideoReceiver::GstVideoReceiver(QObject *parent)
     , _worker(new GstVideoWorker(this))
 {
     // qCDebug(GstVideoReceiverLog) << this;
+
+    // _yoloNet = readNetFromONNX("D:/Working/detect_stream/build/Models/yolov5n.onnx");
+    // _yoloNet.setPreferableBackend(DNN_BACKEND_OPENCV);
+    // _yoloNet.setPreferableTarget(DNN_TARGET_CPU);
+
+    // if (_yoloNet.empty()) {
+    //     _yoloLoaded = false;
+    //     cerr << "Error: Could not load YOLOv8n model!" << endl;
+    // } else {
+    //     _yoloLoaded = true;
+    //     cout << "YOLOv8n model loaded successfully." << endl;
+    // }
+    _yoloLoaded = false;
+
 
     _worker->start();
     (void) connect(&_watchdogTimer, &QTimer::timeout, this, &GstVideoReceiver::_watchdog);
@@ -1332,46 +1352,177 @@ GstPadProbeReturn GstVideoReceiver::_teeProbe(GstPad *pad, GstPadProbeInfo *info
     return GST_PAD_PROBE_OK;
 }
 
+
+
+static int frameCounter = 0;   // global or static inside the probe
+
+namespace fs = std::filesystem;
+
 GstPadProbeReturn GstVideoReceiver::_videoSinkProbe(GstPad *pad, GstPadProbeInfo *info, gpointer user_data)
 {
     Q_UNUSED(pad); Q_UNUSED(info)
+    fs::create_directories("D:/Working/QGC-AS/output");
+    if ((info->type & GST_PAD_PROBE_TYPE_BUFFER) == 0) {
+        return GST_PAD_PROBE_OK;
+    }
 
-    if (user_data) {
-        GstVideoReceiver *pThis = static_cast<GstVideoReceiver*>(user_data);
+    GstBuffer* buffer = gst_pad_probe_info_get_buffer(info);
+    if (!buffer) {
+        return GST_PAD_PROBE_OK;
+    }
+    GstCaps *caps = gst_pad_get_current_caps(pad);
+    if (!caps) return GST_PAD_PROBE_OK;
 
-        if (pThis->_resetVideoSink) {
-            pThis->_resetVideoSink = false;
+    GstStructure *s = gst_caps_get_structure(caps, 0);
+    int width, height;
+    const gchar* format = gst_structure_get_string(s, "format");
+    if (!gst_structure_get_int(s, "width", &width) ||
+        !gst_structure_get_int(s, "height", &height)) {
+        gst_caps_unref(caps);
+        return GST_PAD_PROBE_OK;
+    }
 
-#if 0 // FIXME: this makes MPEG2-TS playing smooth but breaks RTSP
-           gst_pad_send_event(pad, gst_event_new_flush_start());
-           gst_pad_send_event(pad, gst_event_new_flush_stop(TRUE));
+    GstMapInfo map;
+    if (gst_buffer_map(buffer, &map, GST_MAP_WRITE)) {
+        cv::Mat frame;
 
-           GstBuffer* buf;
+        if (g_strcmp0(format, "RGBA") == 0) {
+            // Frame has 4 channels
+            cv::Mat rgba(height, width, CV_8UC4, (guchar*)map.data);
+            cv::Mat bgr;
+            // cv::cvtColor(rgba, bgr, cv::COLOR_RGBA2BGR);  // convert to 3-channel BGR
+            // frame = bgr.clone();
+            if(user_data != nullptr) {
+                GstVideoReceiver* pThis = static_cast<GstVideoReceiver*>(user_data);
+                if (pThis->_yoloLoaded) {
+                    // pThis->runYolo(rgba, frameCounter);
+                }
 
-           if ((buf = gst_pad_probe_info_get_buffer(info)) != nullptr) {
-               GstSegment* seg;
+                if (pThis->_resetVideoSink) {
+                    pThis->_resetVideoSink = false;
+                }
 
-               if ((seg = gst_segment_new()) != nullptr) {
-                   gst_segment_init(seg, GST_FORMAT_TIME);
-
-                   seg->start = buf->pts;
-
-                   gst_pad_send_event(pad, gst_event_new_segment(seg));
-
-                   gst_segment_free(seg);
-                   seg = nullptr;
-               }
-
-               gst_pad_set_offset(pad, -static_cast<gint64>(buf->pts));
-           }
-#endif
+                pThis->_noteVideoSinkFrame();
+            }
+        }
+        else if (g_strcmp0(format, "RGB") == 0) {
+            frame = cv::Mat(height, width, CV_8UC3, (guchar*)map.data).clone();
+        }
+        else if (g_strcmp0(format, "I420") == 0) {
+            cv::Mat yuv(height + height/2, width, CV_8UC1, (guchar*)map.data);
+            cv::cvtColor(yuv, frame, cv::COLOR_YUV2BGR_I420);
+        }
+        else if (g_strcmp0(format, "NV12") == 0) {
+            // NV12: height*1.5 because Y + UV
+            cv::Mat yuv(height + height/2, width, CV_8UC1, (guchar*)map.data);
+            cv::cvtColor(yuv, frame, cv::COLOR_YUV2BGR_NV12);
         }
 
-        pThis->_noteVideoSinkFrame();
+        // if(user_data != nullptr) {
+
+        //     GstVideoReceiver* pThis = static_cast<GstVideoReceiver*>(user_data);
+
+        //     if (pThis->_resetVideoSink) {
+        //         pThis->_resetVideoSink = false;
+        //     }
+
+        //     pThis->_noteVideoSinkFrame();
+        // }
+
     }
+
+    gst_buffer_unmap(buffer, &map);
+    gst_caps_unref(caps);
 
     return GST_PAD_PROBE_OK;
 }
+
+vector<string> load_class_list() {
+    vector<string> class_list;
+    ifstream ifs("D:/Working/Cpp-Object-Detection-Yolov5-OpenCV/Yolov5_Video_Object_Detection/Models/classes.txt");
+    string line;
+    while (getline(ifs, line)) class_list.push_back(line);
+    return class_list;
+}
+
+void GstVideoReceiver::runYolo(cv::Mat& rgba, int frameId)
+{
+    // Convert RGBA → BGR for YOLO input
+    cv::Mat bgr;
+    cv::cvtColor(rgba, bgr, cv::COLOR_RGBA2BGR);
+
+    // Preprocess for YOLO
+    cv::Mat blob;
+    blobFromImage(bgr, blob, 1.0f/255.0f, cv::Size(640, 640),
+                  cv::Scalar(), true, false);
+    _yoloNet.setInput(blob);
+
+    // Forward pass
+    std::vector<cv::Mat> outputs;
+    _yoloNet.forward(outputs, _yoloNet.getUnconnectedOutLayersNames());
+    float* data = (float*)outputs[0].data;
+
+    std::vector<int> classIds;
+    std::vector<float> confidences;
+    std::vector<cv::Rect> boxes;
+
+    float x_factor = bgr.cols / 640.0f;
+    float y_factor = bgr.rows / 640.0f;
+    const int rows = 25200;
+    const int dimensions = 85;
+
+    for (int i = 0; i < rows; i++) {
+        float obj_conf = data[4];
+        if (obj_conf >= 0.4) {
+            float* classes_scores = data + 5;
+            cv::Mat scores(1, (int)load_class_list().size(), CV_32FC1, classes_scores);
+            cv::Point class_id;
+            double max_class_score;
+            minMaxLoc(scores, 0, &max_class_score, 0, &class_id);
+
+            double confidence = obj_conf * max_class_score;
+            if (confidence > 0.25 && class_id.x == 0) { // Person
+                float x = data[0];
+                float y = data[1];
+                float w = data[2];
+                float h = data[3];
+
+                int left   = int((x - 0.5 * w) * x_factor);
+                int top    = int((y - 0.5 * h) * y_factor);
+                int width  = int(w * x_factor);
+                int height = int(h * y_factor);
+
+                classIds.push_back(class_id.x);
+                confidences.push_back((float)confidence);
+                boxes.push_back(cv::Rect(left, top, width, height));
+            }
+        }
+        data += dimensions;
+    }
+
+    // NMS
+    std::vector<int> indices;
+    cv::dnn::NMSBoxes(boxes, confidences, 0.25f, 0.45f, indices);
+
+    // Draw on the **live RGBA frame**
+    for (int idx : indices) {
+        cv::Rect box = boxes[idx];
+        cv::rectangle(rgba, box, CV_RGB(0,255,0), 2);
+        cv::putText(rgba, "Person", cv::Point(box.x, std::max(0, box.y-10)),
+                    cv::FONT_HERSHEY_SIMPLEX, 0.5, CV_RGB(0,255,0), 2);
+    }
+
+        // (Optional) save frame if person detected
+        // if (!indices.empty()) {
+        //     if (peopleCount == 2) {
+        //     static int saveIndex = 0;
+        //     string outDir = "D:/Working/QGC-AS/output";
+        //     string filename = outDir + "/det_" + to_string(saveIndex++) + ".jpg";
+        //     imwrite(filename, frame);
+        //     }
+        // }
+}
+
 
 GstPadProbeReturn GstVideoReceiver::_eosProbe(GstPad *pad, GstPadProbeInfo *info, gpointer user_data)
 {

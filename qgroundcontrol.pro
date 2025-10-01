@@ -445,9 +445,13 @@ contains (DEFINES, QGC_ENABLE_PAIRING) {
         src/PairingManager/aes.cpp
 }
 
+INCLUDEPATH += C:/opencv/build/include
+INCLUDEPATH += C:/opencv/build/include/opencv2
+
 # Main QGC Headers and Source files
 
 HEADERS += \
+    src/UTMSP/UTMSPManager.h \
     src/ADSB/ADSBVehicle.h \
     src/ADSB/ADSBVehicleManager.h \
     src/AnalyzeView/LogDownloadController.h \
@@ -943,6 +947,7 @@ AndroidBuild {
 }
 
 SOURCES += \
+    src/UTMSP/UTMSPManager.cc \
     src/ADSB/ADSBVehicle.cc \
     src/ADSB/ADSBVehicleManager.cc \
     src/AnalyzeView/LogDownloadController.cc \

@@ -29,6 +29,7 @@ public:
     DEFINE_SETTINGFACT(saveCsvTelemetry)
     DEFINE_SETTINGFACT(forwardMavlink)
     DEFINE_SETTINGFACT(forwardMavlinkHostName)
+    DEFINE_SETTINGFACT(forwardRaspherriMavlinkHostName)
     DEFINE_SETTINGFACT(forwardMavlinkAPMSupportHostName)
     DEFINE_SETTINGFACT(mavlink2SigningKey)
     DEFINE_SETTINGFACT(sendGCSHeartbeat)

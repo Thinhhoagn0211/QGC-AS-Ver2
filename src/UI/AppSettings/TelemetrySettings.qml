@@ -106,8 +106,17 @@ SettingsPage {
         LabelledFactTextField {
             Layout.fillWidth:           true
             textFieldPreferredWidth:    ScreenTools.defaultFontPixelWidth * 20
-            label:                      qsTr("Host name")
+            label:                      qsTr("Gimbal host name")
             fact:                       _mavlinkSettings.forwardMavlinkHostName
+            visible:                    fact.visible
+            enabled:                    _mavlinkSettings.forwardMavlink.rawValue
+        }
+
+        LabelledFactTextField {
+            Layout.fillWidth:           true
+            textFieldPreferredWidth:    ScreenTools.defaultFontPixelWidth * 20
+            label:                      qsTr("Raspberry host name:")
+            fact:                       _mavlinkSettings.forwardRaspherriMavlinkHostName
             visible:                    fact.visible
             enabled:                    _mavlinkSettings.forwardMavlink.rawValue
         }

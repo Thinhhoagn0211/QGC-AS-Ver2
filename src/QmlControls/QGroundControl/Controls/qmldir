@@ -132,3 +132,15 @@ PlanViewToolBar                    1.0 PlanViewToolBar.qml
 PlanToolBarIndicators           1.0 PlanToolBarIndicators.qml
 QGCFlickableScrollIndicator    1.0 QGCFlickableScrollIndicator.qml
 GPSIndicator                   1.0 GPSIndicator.qml
+GPSIndicatorPage               1.0 GPSIndicatorPage.qml
+FactSlider                      1.0 FactSlider.qml
+LabelledLabel                   1.0 LabelledLabel.qml
+ValueSlider                     1.0 ValueSlider.qml
+ConfigButton                    1.0 ConfigButton.qml
+SettingsPagesModel              1.0 SettingsPagesModel.qml         
+SettingsButton                  1.0 SettingsButton.qml
+OfflineMapEditor                1.0 OfflineMapEditor.qml
+OfflineMapInfo                  1.0 OfflineMapInfo.qml
+QGCRoundButton                  1.0 QGCRoundButton.qml
+GimbalIndicatorPage             1.0 GimbalIndicatorPage.qml
+ScopeIndicatorPage              1.0 ScopeIndicatorPage.qml

@@ -21,13 +21,12 @@ import QGroundControl.FlightMap       1.0
 import QGroundControl.FactControls    1.0
 import QGroundControl.Controls       1.0
 import QGroundControl.ScreenTools 1.0
-/// @brief Native QML top level window
+
 /// All properties defined here are visible to all QML pages.
 ApplicationWindow {
     id:             mainWindow
     visible:        true
 
-    property bool   _utmspSendActTrigger
 
     Component.onCompleted: {
         // Start the sequence of first run prompt(s)
@@ -68,8 +67,8 @@ ApplicationWindow {
 
     readonly property real      _topBottomMargins:          ScreenTools.defaultFontPixelHeight * 0.5
 
-    //-------------------------------------------------------------------------
-    //-- Global Scope Variables
+    // //-------------------------------------------------------------------------
+    // //-- Global Scope Variables
 
     QtObject {
         id: globals
@@ -87,11 +86,11 @@ ApplicationWindow {
         property bool               commingFromRIDIndicator:        false
     }
 
-    /// Default color palette used throughout the UI
+    // /// Default color palette used throughout the UI
     QGCPalette { id: qgcPal; colorGroupEnabled: true }
 
-    //-------------------------------------------------------------------------
-    //-- Actions
+    // //-------------------------------------------------------------------------
+    // //-- Actions
 
     signal armVehicleRequest
     signal forceArmVehicleRequest
@@ -100,10 +99,10 @@ ApplicationWindow {
     signal vtolTransitionToMRFlightRequest
     signal showPreFlightChecklistIfNeeded
 
-    //-------------------------------------------------------------------------
-    //-- Global Scope Functions
+    // //-------------------------------------------------------------------------
+    // //-- Global Scope Functions
 
-    // This function is used to prevent view switching if there are validation errors
+    // // This function is used to prevent view switching if there are validation errors
     function allowViewSwitch(previousValidationErrorCount = 0) {
         // Run validation on active focus control to ensure it is valid before switching views
         if (mainWindow.activeFocusControl instanceof FactTextField) {
@@ -158,8 +157,8 @@ ApplicationWindow {
         }
     }
 
-    //-------------------------------------------------------------------------
-    //-- Global simple message dialog
+    // //-------------------------------------------------------------------------
+    // //-- Global simple message dialog
 
     function showMessageDialog(dialogTitle, dialogText, buttons = Dialog.Ok, acceptFunction = null, closeFunction = null) {
         simpleMessageDialogComponent.createObject(mainWindow, { title: dialogTitle, text: dialogText, buttons: buttons, acceptFunction: acceptFunction, closeFunction: closeFunction }).open()
@@ -255,10 +254,10 @@ ApplicationWindow {
         }
     }
 
-    background: Rectangle {
-        anchors.fill:   parent
-        color:          QGroundControl.globalPalette.window
-    }
+    // background: Rectangle {
+    //     anchors.fill:   parent
+    //     color:          QGroundControl.globalPalette.window
+    // }
 
     FlyView { 
         id:                     flyView
@@ -656,8 +655,29 @@ ApplicationWindow {
         indicatorDrawer.open()
     }
 
+
+    function showToolbarDrawer(drawerComponent, toolbarItem) {
+        toolbarDrawer.sourceComponent = drawerComponent
+        toolbarDrawer.toolbarItem = toolbarItem
+        toolbarDrawer.open()
+    }
+
+    function showToolbarCameraDrawer(drawerComponent, toolbarItem) {
+        toolbarCameraDrawer.sourceComponent = drawerComponent
+        toolbarCameraDrawer.toolbarItem = toolbarItem
+        toolbarCameraDrawer.open()
+    }
+
     function closeIndicatorDrawer() {
         indicatorDrawer.close()
+    }
+
+    function closeToolbarDrawer() {
+        toolbarDrawer.close()
+    }
+
+    function closeToolbarCameraDrawer() {
+        toolbarCameraDrawer.close()
     }
 
     Popup {
@@ -751,6 +771,219 @@ ApplicationWindow {
                     target:     indicatorDrawerLoader.item
                     property:   "drawer"
                     value:      indicatorDrawer
+                }
+            }
+        }
+    }
+
+
+    Popup {
+        id:             toolbarDrawer
+        x:              calcXPosition()
+        y:              calcYPosition()
+        leftInset:      0
+        rightInset:     0
+        topInset:       0
+        bottomInset:    0
+        padding:        _margins * 2
+        visible:        false
+        modal:          false
+        focus:          true
+        closePolicy:    Popup.CloseOnEscape | Popup.CloseOnPressOutside
+
+        property var sourceComponent
+        property var toolbarItem
+
+        property bool _expanded:    false
+        property real _margins:     ScreenTools.defaultFontPixelHeight / 4
+
+        function calcXPosition() {
+            if (toolbarItem) {
+                return toolbarItem.mapToItem(mainWindow.contentItem, toolbarItem.width, 0).x + toolbarItem.padding + _margins
+            } else {
+                return _margins
+            }
+        }
+
+        function calcYPosition() {
+            if (toolbarItem) {
+                var yCenter = toolbarItem.mapToItem(mainWindow.contentItem, 0, toolbarItem.height / 2).y
+                return Math.max(_margins, Math.min(yCenter - (contentItem.implicitHeight / 2), mainWindow.contentItem.height - contentItem.implicitHeight - _margins - (toolbarItem.padding * 2) - (ScreenTools.defaultFontPixelHeight / 2)))
+            } else {
+                return _margins
+            }
+        }
+
+        
+
+        onOpened: {
+            _expanded                               = false;
+            toolbarDrawerLoader.sourceComponent   = toolbarDrawer.sourceComponent
+        }
+        onClosed: {
+            _expanded                               = false
+            toolbarItem                           = undefined
+            toolbarDrawerLoader.sourceComponent   = undefined
+        }
+
+        background: Item {
+            Rectangle {
+                id:             backgroundToolbarRect
+                anchors.fill:   parent
+                color:          QGroundControl.globalPalette.window
+                radius:         toolbarDrawer._margins
+                opacity:        0.85
+            }
+
+            Rectangle {
+                anchors.horizontalCenter:   backgroundToolbarRect.right
+                anchors.verticalCenter:     backgroundToolbarRect.top
+                width:                      ScreenTools.largeFontPixelHeight
+                height:                     width
+                radius:                     width / 2
+                color:                      QGroundControl.globalPalette.button
+                border.color:               QGroundControl.globalPalette.buttonText
+                visible:                    toolbarDrawerLoader.item && toolbarDrawerLoader.item.showExpand && !toolbarDrawer._expanded
+
+                QGCLabel {
+                    anchors.centerIn:   parent
+                    text:               ">"
+                    color:              QGroundControl.globalPalette.buttonText
+                }
+
+                QGCMouseArea {
+                    fillItem: parent
+                    onClicked: toolbarDrawer._expanded = true
+                }
+            }
+        }
+
+        contentItem: QGCFlickable {
+            id:             toolbarDrawerLoaderFlickable
+            implicitWidth:  Math.min(mainWindow.contentItem.width - (2 * toolbarDrawer._margins) - (toolbarDrawer.padding * 2), toolbarDrawerLoader.width)
+            implicitHeight: Math.min(mainWindow.contentItem.height - ScreenTools.toolbarHeight - (2 * toolbarDrawer._margins) - (toolbarDrawer.padding * 2), toolbarDrawerLoader.height)
+            contentWidth:   toolbarDrawerLoader.width
+            contentHeight:  toolbarDrawerLoader.height
+
+            Loader {
+                id: toolbarDrawerLoader
+
+                Binding {
+                    target:     toolbarDrawerLoader.item
+                    property:   "expanded"
+                    value:      toolbarDrawer._expanded
+                }
+
+                Binding {
+                    target:     toolbarDrawerLoader.item
+                    property:   "drawer"
+                    value:      toolbarDrawer
+                }
+            }
+        }
+    }
+
+    Popup {
+        id:             toolbarCameraDrawer
+        x:              calcXPosition()
+        y:              calcYPosition()
+        leftInset:      0
+        rightInset:     0
+        topInset:       0
+        bottomInset:    0
+        padding:        _margins * 2
+        visible:        false
+        modal:          false
+        focus:          true
+        closePolicy:    Popup.CloseOnEscape | Popup.CloseOnPressOutside
+
+        property var sourceComponent
+        property var toolbarItem
+
+        property bool _expanded:    false
+        property real _margins:     ScreenTools.defaultFontPixelHeight / 4
+
+        function calcXPosition() {
+            if (toolbarItem) {
+                return toolbarItem.mapToItem(mainWindow.contentItem, toolbarItem.width, 0).x + toolbarItem.padding + _margins
+            } else {
+                return _margins
+            }
+        }
+
+        function calcYPosition() {
+            if (toolbarItem) {
+                var yCenter = toolbarItem.mapToItem(mainWindow.contentItem, 0, toolbarItem.height / 2).y
+                return Math.max(_margins, Math.min(yCenter - (contentItem.implicitHeight / 2), mainWindow.contentItem.height - contentItem.implicitHeight - _margins - (toolbarItem.padding * 2) - (ScreenTools.defaultFontPixelHeight / 2)))
+            } else {
+                return _margins
+            }
+        }
+
+        
+
+        onOpened: {
+            _expanded                               = false;
+            toolbarCameraDrawerLoader.sourceComponent   = toolbarCameraDrawer.sourceComponent
+        }
+        onClosed: {
+            _expanded                               = false
+            toolbarItem                           = undefined
+            toolbarCameraDrawerLoader.sourceComponent   = undefined
+        }
+
+        background: Item {
+            Rectangle {
+                id:             backgroundToolbarCameraRect
+                anchors.fill:   parent
+                color:          QGroundControl.globalPalette.window
+                radius:         toolbarCameraDrawer._margins
+                opacity:        0.85
+            }
+
+            Rectangle {
+                anchors.horizontalCenter:   backgroundToolbarCameraRect.right
+                anchors.verticalCenter:     backgroundToolbarCameraRect.top
+                width:                      ScreenTools.largeFontPixelHeight
+                height:                     width
+                radius:                     width / 2
+                color:                      QGroundControl.globalPalette.button
+                border.color:               QGroundControl.globalPalette.buttonText
+                visible:                    toolbarCameraDrawerLoader.item && toolbarCameraDrawerLoader.item.showExpand && !toolbarCameraDrawer._expanded
+
+                QGCLabel {
+                    anchors.centerIn:   parent
+                    text:               ">"
+                    color:              QGroundControl.globalPalette.buttonText
+                }
+
+                QGCMouseArea {
+                    fillItem: parent
+                    onClicked: toolbarCameraDrawer._expanded = true
+                }
+            }
+        }
+
+        contentItem: QGCFlickable {
+            id:             toolbarCameraDrawerLoaderFlickable
+            implicitWidth:  Math.min(mainWindow.contentItem.width - (2 * toolbarCameraDrawer._margins) - (toolbarCameraDrawer.padding * 2), toolbarCameraDrawerLoader.width)
+            implicitHeight: Math.min(mainWindow.contentItem.height - ScreenTools.toolbarHeight - (2 * toolbarCameraDrawer._margins) - (toolbarCameraDrawer.padding * 2), toolbarCameraDrawerLoader.height)
+            contentWidth:   toolbarCameraDrawerLoader.width
+            contentHeight:  toolbarCameraDrawerLoader.height
+
+            Loader {
+                id: toolbarCameraDrawerLoader
+
+                Binding {
+                    target:     toolbarCameraDrawerLoader.item
+                    property:   "expanded"
+                    value:      toolbarCameraDrawer._expanded
+                }
+
+                Binding {
+                    target:     toolbarCameraDrawerLoader.item
+                    property:   "drawer"
+                    value:      toolbarCameraDrawer
                 }
             }
         }

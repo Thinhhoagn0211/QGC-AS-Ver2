@@ -7,7 +7,7 @@
  *
  ****************************************************************************/
 
-import QtQuick 2.4
+import QtQuick 2.15
 import QtQuick.Controls 2.2
 import QtQuick.Layouts 1.2
 import Qt.labs.animation 1.0
@@ -170,14 +170,16 @@ Control {
             height: background.height - y
 
             onXChanged: {
-                if (dragHandler.active) {
+                if (dragHandler.drag.active) {
                     value = _sliderXPosToValue(x)
                 }
             }
 
-            DragHandler {
-                id:             dragHandler
-                yAxis.enabled:  false
+            QGCMouseArea {
+                id: dragHandler
+                anchors.fill: parent
+                drag.target: sliderContainer
+                drag.axis: Drag.XAxis
             }
 
             BoundaryRule on x {

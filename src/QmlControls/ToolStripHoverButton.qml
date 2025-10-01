@@ -14,7 +14,8 @@ import QGroundControl 1.0
 import QGroundControl.Controls  1.0
 import QGroundControl.Palette  1.0
 import QGroundControl.ScreenTools 1.0
-
+import QGroundControl.FlightDisplay 1.0
+import QGroundControl.FlightMap     1.0
 
 
 Button {
@@ -48,20 +49,51 @@ Button {
     onCheckedChanged: toolStripAction.checked = checked
 
     onClicked: {
-        if (mainWindow.allowViewSwitch()) {
-            dropPanel.hide()
-            if (!toolStripAction.dropPanelComponent) {
-                toolStripAction.triggered(this)
-            } else if (checked) {
-                var panelEdgeTopPoint = mapToItem(_root, width, 0)
-                dropPanel.show(panelEdgeTopPoint, toolStripAction.dropPanelComponent, this)
-                checked = true
-                control.dropped(index)
-            }
-        } else if (checkable) {
-            checked = !checked
+        dropPanel.hide()
+        if (!toolStripAction.dropPanelComponent) {
+            toolStripAction.triggered(this)
+                if (toolStripAction.objectName === "connectAction") {
+                    mainWindow.showToolbarDrawer(overallStatusOfflineIndicatorPage, this)
+                } else if (toolStripAction.objectName === "actionGimbal") {
+                    mainWindow.showToolbarDrawer(dropGimbalIndicatorPage, this)
+                } else if (toolStripAction.objectName === "actionPhotoVideo") {
+                    mainWindow.showToolbarCameraDrawer(photoVideoControlComponent, this)
+                } else if (toolStripAction.objectName === "actionScope") {
+                    mainWindow.showToolbarDrawer(scopeIndicatorPageComponent, this)
+                }
+        } else if (checked) {
+            var panelEdgeTopPoint = mapToItem(_root, width, 0)
+            dropPanel.show(panelEdgeTopPoint, toolStripAction.dropPanelComponent, this)
+            checked = true
+            control.dropped(index)
         }
     }
+
+
+    Component {
+        id: overallStatusOfflineIndicatorPage
+
+        MainStatusIndicatorOfflinePage { }
+    }
+
+    Component {
+        id: dropGimbalIndicatorPage
+        
+        GimbalIndicatorPage {}
+    }
+
+    Component {
+        id: scopeIndicatorPageComponent
+
+        ScopeIndicatorPage {}
+    }
+
+    Component {
+        id: photoVideoControlComponent
+
+        PhotoVideoControl {}
+    }
+    
 
     QGCPalette { id: qgcPal; colorGroupEnabled: control.enabled }
 

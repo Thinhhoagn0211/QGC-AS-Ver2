@@ -25,6 +25,8 @@ GeoTagController::GeoTagController(QObject *parent)
 {
     // qCDebug(GeoTagControllerLog) << Q_FUNC_INFO << this;
 
+
+
     _worker->moveToThread(_workerThread);
 
     (void) connect(_worker, &GeoTagWorker::progressChanged, this, &GeoTagController::_workerProgressChanged);

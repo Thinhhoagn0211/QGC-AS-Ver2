@@ -21,7 +21,6 @@ import QGroundControl.FlightMap  1.0
 
 
 
-
 Map {
     id: _map
 
