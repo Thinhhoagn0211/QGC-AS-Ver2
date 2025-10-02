@@ -1,22 +1,17 @@
 add_subdirectory(Providers)
 
 add_library(QtLocationPlugin
-    QGCCachedTileSet.cpp
-    QGCCachedTileSet.h
     QGCCacheTile.h
     QGCMapEngine.cpp
     QGCMapEngine.h
     QGCMapEngineManager.cc
     QGCMapEngineManager.h
-    QGCMapTasks.h
     QGCMapUrlEngine.cpp
     QGCMapUrlEngine.h
     QGCTile.h
     QGCTileCacheWorker.cpp
     QGCTileCacheWorker.h
     QGCTileSet.h
-    QGeoFileTileCacheQGC.cpp
-    QGeoFileTileCacheQGC.h
     QGeoMapReplyQGC.cpp
     QGeoMapReplyQGC.h
     QGeoCodeReplyQGC.cpp
@@ -27,11 +22,11 @@ add_library(QtLocationPlugin
     QGeoServiceProviderPluginQGC.h
     QGeoTiledMappingManagerEngineQGC.cpp
     QGeoTiledMappingManagerEngineQGC.h
-    QGeoTiledMapQGC.cpp
-    QGeoTiledMapQGC.h
     QGeoTileFetcherQGC.cpp
     QGeoTileFetcherQGC.h
-
+    QGCMapEngineData.h
+    QGCMapTileSet.cpp
+    QGCMapTileSet.h
 )
 
 target_link_libraries(QtLocationPlugin

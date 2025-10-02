@@ -9,48 +9,41 @@
 
 #pragma once
 
-#include <QtCore/QLoggingCategory>
-#include <QtLocation/private/qgeotiledmapreply_p.h>
 #include <QtNetwork/QNetworkReply>
-#include <QtNetwork/QNetworkRequest>
+#include <QtLocation/private/qgeotiledmapreply_p.h>
+#include <QTimer>
 
-#include "QGCMapTasks.h"
-
-Q_DECLARE_LOGGING_CATEGORY(QGeoTiledMapReplyQGCLog)
-
-class QNetworkAccessManager;
-class QSslError;
+#include "QGCMapEngineData.h"
 
 class QGeoTiledMapReplyQGC : public QGeoTiledMapReply
 {
     Q_OBJECT
-
 public:
-    explicit QGeoTiledMapReplyQGC(QNetworkAccessManager *networkManager, const QNetworkRequest &request, const QGeoTileSpec &spec, QObject *parent = nullptr);
+    QGeoTiledMapReplyQGC(QNetworkAccessManager*  networkManager, const QNetworkRequest& request, const QGeoTileSpec &spec, QObject *parent = 0);
     ~QGeoTiledMapReplyQGC();
+    void abort();
 
-    bool init();
-    void abort() final;
+signals:
+    void terrainDone            (QByteArray responseBytes, QNetworkReply::NetworkError error);
 
 private slots:
-    void _networkReplyFinished();
-    void _networkReplyError(QNetworkReply::NetworkError error);
-    void _networkReplySslErrors(const QList<QSslError> &errors);
-    void _cacheReply(QGCCacheTile *tile);
-    void _cacheError(QGCMapTask::TaskType type, QStringView errorString);
+    void networkReplyFinished   ();
+    void networkReplyError      (QNetworkReply::NetworkError error);
+    void cacheReply             (QGCCacheTile* tile);
+    void cacheError             (QGCMapTask::TaskType type, QString errorString);
+    void timeout                ();
 
 private:
-    static void _initDataFromResources();
+    void _clearReply            ();
+    void setIgnoreSSLErrorsIfNeeded(QNetworkReply& networkReply);
 
-    QNetworkAccessManager *_networkManager = nullptr;
-    QNetworkRequest _request;
-    bool m_initialized = false;
-
-    static QByteArray _bingNoTileImage;
-    static QByteArray _badTile;
-
-    enum HTTP_Response {
-        SUCCESS_OK = 200,
-        REDIRECTION_MULTIPLE_CHOICES = 300
-    };
+private:
+    QNetworkReply*          _reply;
+    QNetworkRequest         _request;
+    QNetworkAccessManager*  _networkManager;
+    QByteArray              _badMapbox;
+    QByteArray              _badTile;
+    QTimer                  _timer;
+    static QByteArray       _bingNoTileImage;
+    static int              _requestCount;
 };

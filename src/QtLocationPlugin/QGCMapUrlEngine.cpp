@@ -6,274 +6,198 @@
  * COPYING.md in the root of the source code directory.
  *
  ****************************************************************************/
-
-#include "QGCMapUrlEngine.h"
-
-// #include <QtCore/QtMinMax>
-#include <memory>
-#include "BingMapProvider.h"
-#include "ElevationMapProvider.h"
-#include "EsriMapProvider.h"
-#include "GenericMapProvider.h"
-#include "GoogleMapProvider.h"
-#include "MapboxMapProvider.h"
 #include "QGCLoggingCategory.h"
-#include <QUrl>
-QGC_LOGGING_CATEGORY(QGCMapUrlEngineLog, "qgc.qtlocationplugin.qgcmapurlengine")
+QGC_LOGGING_CATEGORY(QGCMapUrlEngineLog, "QGCMapUrlEngineLog")
 
-const QList<SharedMapProvider> UrlFactory::_providers = {
+#include "AppSettings.h"
+#include "QGCApplication.h"
+#include "QGCMapEngine.h"
+#include "SettingsManager.h"
+
+
+#include <QByteArray>
+#include <QEventLoop>
+#include <QNetworkReply>
+#include <QRegExp>
+#include <QString>
+#include <QTimer>
+
+const char* UrlFactory::kCopernicusElevationProviderKey = "Copernicus Elevation";
+const char* UrlFactory::kCopernicusElevationProviderNotice = "© Airbus Defence and Space GmbH";
+
+//-----------------------------------------------------------------------------
+UrlFactory::UrlFactory() : _timeout(5 * 1000) {
+
+    // Warning : in _providersTable, keys needs to follow this format :
+    // "Provider Type"
 #ifndef QGC_NO_GOOGLE_MAPS
-    std::make_shared<GoogleStreetMapProvider>(),
-    std::make_shared<GoogleSatelliteMapProvider>(),
-    std::make_shared<GoogleTerrainMapProvider>(),
-    std::make_shared<GoogleHybridMapProvider>(),
-    std::make_shared<GoogleLabelsMapProvider>(),
+    _providersTable["Google Street Map"] = new GoogleStreetMapProvider(this);
+    _providersTable["Google Satellite"]  = new GoogleSatelliteMapProvider(this);
+    _providersTable["Google Terrain"]    = new GoogleTerrainMapProvider(this);
+    _providersTable["Google Hybrid"]    = new GoogleHybridMapProvider(this);
+    _providersTable["Google Labels"]     = new GoogleLabelsMapProvider(this);
 #endif
-    std::make_shared<BingRoadMapProvider>(),
-    std::make_shared<BingSatelliteMapProvider>(),
-    std::make_shared<BingHybridMapProvider>(),
 
-    std::make_shared<StatkartTopoMapProvider>(),
-    std::make_shared<StatkartBaseMapProvider>(),
-    std::make_shared<SvalbardMapProvider>(),
+    _providersTable["Bing Road"]      = new BingRoadMapProvider(this);
+    _providersTable["Bing Satellite"] = new BingSatelliteMapProvider(this);
+    _providersTable["Bing Hybrid"]    = new BingHybridMapProvider(this);
 
-    std::make_shared<EniroMapProvider>(),
+    _providersTable["Statkart Topo"] = new StatkartMapProvider(this);
+    _providersTable["Statkart Basemap"] = new StatkartBaseMapProvider(this);
 
-    std::make_shared<EsriWorldStreetMapProvider>(),
-    std::make_shared<EsriWorldSatelliteMapProvider>(),
-    std::make_shared<EsriTerrainMapProvider>(),
+    _providersTable["Eniro Topo"] = new EniroMapProvider(this);
 
-    std::make_shared<MapboxStreetMapProvider>(),
-    std::make_shared<MapboxLightMapProvider>(),
-    std::make_shared<MapboxDarkMapProvider>(),
-    std::make_shared<MapboxSatelliteMapProvider>(),
-    std::make_shared<MapboxHybridMapProvider>(),
-    std::make_shared<MapboxStreetsBasicMapProvider>(),
-    std::make_shared<MapboxOutdoorsMapProvider>(),
-    std::make_shared<MapboxBrightMapProvider>(),
-    std::make_shared<MapboxCustomMapProvider>(),
+    // To be add later on Token entry !
+    //_providersTable["Esri World Street"] = new EsriWorldStreetMapProvider(this);
+    //_providersTable["Esri World Satellite"] = new EsriWorldSatelliteMapProvider(this);
+    //_providersTable["Esri Terrain"] = new EsriTerrainMapProvider(this);
 
-    std::make_shared<MapQuestMapMapProvider>(),
-    std::make_shared<MapQuestSatMapProvider>(),
+    _providersTable["Mapbox Streets"]      = new MapboxStreetMapProvider(this);
+    _providersTable["Mapbox Light"]        = new MapboxLightMapProvider(this);
+    _providersTable["Mapbox Dark"]         = new MapboxDarkMapProvider(this);
+    _providersTable["Mapbox Satellite"]    = new MapboxSatelliteMapProvider(this);
+    _providersTable["Mapbox Hybrid"]       = new MapboxHybridMapProvider(this);
+    _providersTable["Mapbox StreetsBasic"] = new MapboxStreetsBasicMapProvider(this);
+    _providersTable["Mapbox Outdoors"]     = new MapboxOutdoorsMapProvider(this);
+    _providersTable["Mapbox Bright"]       = new MapboxBrightMapProvider(this);
+    _providersTable["Mapbox Custom"]       = new MapboxCustomMapProvider(this);
 
-    std::make_shared<VWorldStreetMapProvider>(),
-    std::make_shared<VWorldSatMapProvider>(),
+    //_providersTable["MapQuest Map"] = new MapQuestMapMapProvider(this);
+    //_providersTable["MapQuest Sat"] = new MapQuestSatMapProvider(this);
 
-    std::make_shared<JapanStdMapProvider>(),
-    std::make_shared<JapanSeamlessMapProvider>(),
-    std::make_shared<JapanAnaglyphMapProvider>(),
-    std::make_shared<JapanSlopeMapProvider>(),
-    std::make_shared<JapanReliefMapProvider>(),
+    _providersTable["VWorld Street Map"] = new VWorldStreetMapProvider(this);
+    _providersTable["VWorld Satellite Map"] = new VWorldSatMapProvider(this);
 
-    std::make_shared<LINZBasemapMapProvider>(),
+    _providersTable[kCopernicusElevationProviderKey] = new CopernicusElevationProvider(this);
 
-    std::make_shared<OpenStreetMapProvider>(),
+    _providersTable["Japan-GSI Contour"] = new JapanStdMapProvider(this);
+    _providersTable["Japan-GSI Seamless"] = new JapanSeamlessMapProvider(this);
+    _providersTable["Japan-GSI Anaglyph"] = new JapanAnaglyphMapProvider(this);
+    _providersTable["Japan-GSI Slope"] = new JapanSlopeMapProvider(this);
+    _providersTable["Japan-GSI Relief"] = new JapanReliefMapProvider(this);
 
-    std::make_shared<CustomURLMapProvider>(),
+    _providersTable["LINZ Basemap"] = new LINZBasemapMapProvider(this);
 
-    std::make_shared<CopernicusElevationProvider>()
-};
-
-QString UrlFactory::getImageFormat(int qtMapId, QByteArray image)
-{
-    const SharedMapProvider provider = getMapProviderFromQtMapId(qtMapId);
-    if (provider) {
-        return provider->getImageFormat(image);
-    }
-
-    return QString("");
+    _providersTable["CustomURL Custom"] = new CustomURLMapProvider(this);
 }
 
-QString UrlFactory::getImageFormat(QStringView type, QByteArray image)
-{
-    const SharedMapProvider provider = getMapProviderFromProviderType(type);
-    if (provider) {
-        return provider->getImageFormat(image);
-    }
-
-    return QString("");
+void UrlFactory::registerProvider(QString name, MapProvider* provider) {
+    _providersTable[name] = provider;
 }
 
-QUrl UrlFactory::getTileURL(int qtMapId, int x, int y, int zoom)
-{
-    const SharedMapProvider provider = getMapProviderFromQtMapId(qtMapId);
-    if (provider) {
-        return provider->getTileURL(x, y, zoom);
-    }
+//-----------------------------------------------------------------------------
+UrlFactory::~UrlFactory() {}
 
-    return QUrl();
+QString UrlFactory::getImageFormat(int id, const QByteArray& image) {
+    QString type = getTypeFromId(id);
+    if (_providersTable.find(type) != _providersTable.end()) {
+        return _providersTable[getTypeFromId(id)]->getImageFormat(image);
+    } else {
+        qCDebug(QGCMapUrlEngineLog) << "getImageFormat : Map not registered :" << type;
+        return "";
+    }
 }
 
-QUrl UrlFactory::getTileURL(QStringView type, int x, int y, int zoom)
-{
-    const SharedMapProvider provider = getMapProviderFromProviderType(type);
-    if (provider) {
-        return provider->getTileURL(x, y, zoom);
+//-----------------------------------------------------------------------------
+QString UrlFactory::getImageFormat(const QString& type, const QByteArray& image) {
+    if (_providersTable.find(type) != _providersTable.end()) {
+        return _providersTable[type]->getImageFormat(image);
+    } else {
+        qCDebug(QGCMapUrlEngineLog) << "getImageFormat : Map not registered :" << type;
+        return "";
+    }
+}
+QNetworkRequest UrlFactory::getTileURL(int id, int x, int y, int zoom,
+                                       QNetworkAccessManager* networkManager) {
+
+    QString type = getTypeFromId(id);
+    if (_providersTable.find(type) != _providersTable.end()) {
+        return _providersTable[type]->getTileURL(x, y, zoom, networkManager);
     }
 
-    return QUrl();
+    qCDebug(QGCMapUrlEngineLog) << "getTileURL : map not registered :" << type;
+    return QNetworkRequest(QUrl());
 }
 
-quint32 UrlFactory::averageSizeForType(QStringView type)
-{
-    const SharedMapProvider provider = getMapProviderFromProviderType(type);
-    if (provider) {
-        return provider->getAverageSize();
+//-----------------------------------------------------------------------------
+QNetworkRequest UrlFactory::getTileURL(const QString& type, int x, int y, int zoom,
+                                       QNetworkAccessManager* networkManager) {
+    if (_providersTable.find(type) != _providersTable.end()) {
+        return _providersTable[type]->getTileURL(x, y, zoom, networkManager);
     }
-
-    return QGC_AVERAGE_TILE_SIZE;
+    qCDebug(QGCMapUrlEngineLog) << "getTileURL : map not registered :" << type;
+    return QNetworkRequest(QUrl());
 }
 
-bool UrlFactory::isElevation(int qtMapId)
-{
-    const SharedMapProvider provider = getMapProviderFromQtMapId(qtMapId);
-    if (provider) {
-        return provider->isElevationProvider();
+//-----------------------------------------------------------------------------
+quint32 UrlFactory::averageSizeForType(const QString& type) {
+    if (_providersTable.find(type) != _providersTable.end()) {
+        return _providersTable[type]->getAverageSize();
     }
+    qCDebug(QGCMapUrlEngineLog) << "UrlFactory::averageSizeForType " << type
+        << " Not registered";
 
-    return false;
+    //    case AirmapElevation:
+    //        return AVERAGE_AIRMAP_ELEV_SIZE;
+    //    default:
+    //        break;
+    //    }
+    return AVERAGE_TILE_SIZE;
 }
 
-int UrlFactory::long2tileX(QStringView mapType, double lon, int z)
-{
-    const SharedMapProvider provider = getMapProviderFromProviderType(mapType);
-    if (provider) {
-        return provider->long2tileX(lon, z);
-    }
-
-    return 0;
-}
-
-int UrlFactory::lat2tileY(QStringView mapType, double lat, int z)
-{
-    const SharedMapProvider provider = getMapProviderFromProviderType(mapType);
-    if (provider) {
-        return provider->lat2tileY(lat, z);
-    }
-
-    return 0;
-}
-
-QGCTileSet UrlFactory::getTileCount(int zoom, double topleftLon, double topleftLat, double bottomRightLon, double bottomRightLat, QStringView mapType)
-{
-    const SharedMapProvider provider = getMapProviderFromProviderType(mapType);
-    if (provider) {
-        // TODO: zoom = qBound(QGeoCameraCapabilities.minimumZoomLevel(), zoom, QGeoCameraCapabilities.maximumZoomLevel());
-        zoom = qBound(1, zoom, QGC_MAX_MAP_ZOOM);
-        return provider->getTileCount(zoom, topleftLon, topleftLat, bottomRightLon, bottomRightLat);
-    }
-
-    return QGCTileSet();
-}
-
-QString UrlFactory::getProviderTypeFromQtMapId(int qtMapId)
-{
-    // Default Set
-    if (qtMapId == -1) {
-        return nullptr;
-    }
-
-    for (const SharedMapProvider &provider : _providers) {
-        if (provider->getMapId() == qtMapId) {
-            return provider->getMapName();
+QString UrlFactory::getTypeFromId(int id) {
+    for (auto it = _providersTable.constBegin(); it != _providersTable.constEnd(); ++it) {
+        if ((int)(qHash(it.key()) >> 1) == id) {
+            return it.key();
         }
     }
-
-    qCWarning(QGCMapUrlEngineLog) << "map id not found:" << qtMapId;
-    return QString("");
+    qCDebug(QGCMapUrlEngineLog) << "getTypeFromId : id not found" << id;
+    return "";
 }
 
-SharedMapProvider UrlFactory::getMapProviderFromQtMapId(int qtMapId)
+MapProvider* UrlFactory::getMapProviderFromId(int id)
 {
-    // Default Set
-    if (qtMapId == -1) {
-        return nullptr;
-    }
-
-    for (const SharedMapProvider &provider : _providers) {
-        if (provider->getMapId() == qtMapId) {
-            return provider;
+    QString type = getTypeFromId(id);
+    if (!type.isEmpty()) {
+        if (_providersTable.find(type) != _providersTable.end()) {
+            return _providersTable[type];
         }
     }
-
-    qCWarning(QGCMapUrlEngineLog) << "provider not found from id:" << qtMapId;
     return nullptr;
 }
 
-SharedMapProvider UrlFactory::getMapProviderFromProviderType(QStringView type)
+//-----------------------------------------------------------------------------
+// Todo : qHash produce a uint bigger than max(int)
+// There is still a low probability for this to
+// generate similar hash for different types
+int
+UrlFactory::getIdFromType(const QString& type)
 {
-    for (const SharedMapProvider &provider : _providers) {
-        if (provider->getMapName() == type) {
-            return provider;
-        }
-    }
-
-    qCWarning(QGCMapUrlEngineLog) << "type not found:" << type;
-    return nullptr;
+    return (int)(qHash(type)>>1);
 }
 
-int UrlFactory::getQtMapIdFromProviderType(QStringView type)
+//-----------------------------------------------------------------------------
+int
+UrlFactory::long2tileX(const QString& mapType, double lon, int z)
 {
-    for (const SharedMapProvider &provider : _providers) {
-        if (provider->getMapName() == type) {
-            return provider->getMapId();
-        }
-    }
-
-    qCWarning(QGCMapUrlEngineLog) << "type not found:" << type;
-    return -1;
+    return _providersTable[mapType]->long2tileX(lon, z);
 }
 
-QStringList UrlFactory::getElevationProviderTypes()
+//-----------------------------------------------------------------------------
+int
+UrlFactory::lat2tileY(const QString& mapType, double lat, int z)
 {
-    QStringList types;
-    for (const SharedMapProvider &provider : _providers) {
-        if (provider->isElevationProvider()) {
-            types.append(provider->getMapName());
-        }
-    }
-
-    return types;
+    return _providersTable[mapType]->lat2tileY(lat, z);
 }
 
-QStringList UrlFactory::getProviderTypes()
-{
-    QStringList types;
-    for (const SharedMapProvider &provider : _providers) {
-        types.append(provider->getMapName());
-    }
 
-    return types;
+//-----------------------------------------------------------------------------
+QGCTileSet
+UrlFactory::getTileCount(int zoom, double topleftLon, double topleftLat, double bottomRightLon, double bottomRightLat, const QString& mapType)
+{
+	return _providersTable[mapType]->getTileCount(zoom, topleftLon, topleftLat, bottomRightLon, bottomRightLat);
 }
 
-QString UrlFactory::providerTypeFromHash(int hash)
-{
-    for (const SharedMapProvider &provider : _providers) {
-        const QString mapName = provider->getMapName();
-        if (hashFromProviderType(mapName) == hash) {
-            return mapName;
-        }
-    }
-
-    qCWarning(QGCMapUrlEngineLog) << "provider not found from hash:" << hash;
-    return QString("");
-}
-
-// This seems to limit provider name length to less than ~25 chars due to downcasting to int
-int UrlFactory::hashFromProviderType(QStringView type)
-{
-    const auto hash = qHash(type) >> 1;
-    return static_cast<int>(hash);
-}
-
-QString UrlFactory::tileHashToType(QStringView tileHash)
-{
-    const int providerHash = tileHash.mid(0,10).toInt();
-    return providerTypeFromHash(providerHash);
-}
-
-QString UrlFactory::getTileHash(QStringView type, int x, int y, int z)
-{
-    const int hash = hashFromProviderType(type);
-    return QString::asprintf("%010d%08d%08d%03d", hash, x, y, z);
+bool UrlFactory::isElevation(int mapId){
+    return _providersTable[getTypeFromId(mapId)]->_isElevationProvider();
 }

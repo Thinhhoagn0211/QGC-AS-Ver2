@@ -1,61 +1,49 @@
-/****************************************************************************
- *
- * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
- *
- * QGroundControl is licensed according to the terms in the file
- * COPYING.md in the root of the source code directory.
- *
- ****************************************************************************/
-
 #pragma once
 
 #include "MapProvider.h"
+#include <cmath>
 
-class ElevationProvider : public MapProvider
-{
-protected:
-    ElevationProvider(const QString &mapName, const QString &referrer, const QString &imageFormat, quint32 averageSize,
-                      QGeoMapType::MapStyle mapType)
-        : MapProvider(
-            mapName,
-            referrer,
-            imageFormat,
-            averageSize,
-            mapType) {}
+#include <QByteArray>
+#include <QMutex>
+#include <QNetworkProxy>
+#include <QNetworkReply>
+#include <QPoint>
+#include <QString>
 
-public:
-    bool isElevationProvider() const final { return true; }
-    virtual QByteArray serialize(const QByteArray &image) const = 0;
+static const quint32 AVERAGE_AIRMAP_ELEV_SIZE = 2786;
+
+class ElevationProvider : public MapProvider {
+    Q_OBJECT
+  public:
+    ElevationProvider(const QString& imageFormat, quint32 averageSize,
+                      QGeoMapType::MapStyle mapType, QObject* parent = nullptr);
+
+    virtual bool _isElevationProvider() const override { return true; }
 };
 
-/// https://spacedata.copernicus.eu/collections/copernicus-digital-elevation-model
-class CopernicusElevationProvider : public ElevationProvider
-{
-public:
-    CopernicusElevationProvider()
-        : ElevationProvider(
-            kProviderKey,
-            kProviderURL,
-            QStringLiteral("bin"),
-            kAvgElevSize,
-            QGeoMapType::TerrainMap) {}
+// -----------------------------------------------------------
+// Airmap Elevation
 
-    int long2tileX(double lon, int z) const final;
-    int lat2tileY(double lat, int z) const final;
+class CopernicusElevationProvider : public ElevationProvider {
+    Q_OBJECT
+  public:
+    CopernicusElevationProvider(QObject* parent = nullptr)
+        : ElevationProvider(QStringLiteral("bin"), AVERAGE_AIRMAP_ELEV_SIZE,
+                            QGeoMapType::StreetMap, parent) {}
 
-    QGCTileSet getTileCount(int zoom, double topleftLon,
-                            double topleftLat, double bottomRightLon,
-                            double bottomRightLat) const final;
+    int long2tileX(const double lon, const int z) const override;
 
-    QByteArray serialize(const QByteArray &image) const final;
+    int lat2tileY(const double lat, const int z) const override;
 
+    QGCTileSet getTileCount(const int zoom, const double topleftLon,
+                            const double topleftLat, const double bottomRightLon,
+                            const double bottomRightLat) const override;
+    
     static constexpr const char *kProviderKey = "Copernicus";
     static constexpr const char *kProviderNotice = "© Airbus Defence and Space GmbH";
     static constexpr const char *kProviderURL = "https://terrain-ce.suite.auterion.com";
-    static constexpr quint32 kAvgElevSize = 2786;
 
-private:
-    QString _getURL(int x, int y, int zoom) const final;
-
+  protected:
+    QString _getURL(const int x, const int y, const int zoom, QNetworkAccessManager* networkManager) override;
     const QString _mapUrl = QString(kProviderURL) + QStringLiteral("/api/v1/carpet?points=%1,%2,%3,%4");
 };

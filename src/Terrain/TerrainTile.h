@@ -48,6 +48,12 @@ public:
     ///    @return average elevation
     double avgElevation() const { return (_isValid ? _tileInfo.avgElevation : qQNaN()); }
 
+    static QByteArray serializeFromAirMapJson(const QByteArray& input);
+
+    static constexpr double tileSizeDegrees         = 0.01;         ///< Each terrain tile represents a square area .01 degrees in lat/lon
+    static constexpr double tileValueSpacingDegrees = 1.0 / 3600;   ///< 1 Arc-Second spacing of elevation values
+    static constexpr double tileValueSpacingMeters  = 30.0;
+
 protected:
     struct TileInfo_t {
         double  swLat, swLon, neLat, neLon;
@@ -62,4 +68,16 @@ private:
     double _cellSizeLat = 0.0;              ///< data grid size in latitude direction
     double _cellSizeLon = 0.0;              ///< data grid size in longitude direction
     bool _isValid = false;                  ///< data loaded is valid
+
+    static const char*  _jsonStatusKey;
+    static const char*  _jsonDataKey;
+    static const char*  _jsonBoundsKey;
+    static const char*  _jsonSouthWestKey;
+    static const char*  _jsonNorthEastKey;
+    static const char*  _jsonStatsKey;
+    static const char*  _jsonMaxElevationKey;
+    static const char*  _jsonMinElevationKey;
+    static const char*  _jsonAvgElevationKey;
+    static const char*  _jsonCarpetKey;
+
 };

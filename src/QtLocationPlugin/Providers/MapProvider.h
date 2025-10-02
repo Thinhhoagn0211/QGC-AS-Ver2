@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- * (c) 2009-2024 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
+ * (c) 2009-2020 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
  *
  * QGroundControl is licensed according to the terms in the file
  * COPYING.md in the root of the source code directory.
@@ -9,79 +9,61 @@
 
 #pragma once
 
+#include <QByteArray>
+#include <QString>
+
+#include <cmath>
+
+#include "QGCTileSet.h" 
 #include <QtLocation/private/qgeomaptype_p.h>
-#include <QtCore/QByteArray>
-#include <QtCore/QString>
-#include <QtCore/QLoggingCategory>
 
-#include "QGCTileSet.h"
+static const unsigned char pngSignature[]  = {0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00};
+static const unsigned char jpegSignature[] = {0xFF, 0xD8, 0xFF, 0x00};
+static const unsigned char gifSignature[]  = {0x47, 0x49, 0x46, 0x38, 0x00};
 
-Q_DECLARE_LOGGING_CATEGORY(MapProviderLog)
+static const quint32 AVERAGE_TILE_SIZE = 13652;
 
-// qgeomaptype_p.h
-/*enum MapStyle {
-    NoMap = 0,
-    StreetMap,
-    SatelliteMapDay,
-    SatelliteMapNight,
-    TerrainMap,
-    HybridMap,
-    TransitMap,
-    GrayStreetMap,
-    PedestrianMap,
-    CarNavigationMap,
-    CycleMap,
-    CustomMap = 100
-};*/
+class QNetworkRequest;
+class QNetworkAccessManager;
 
-#define QGC_MAX_MAP_ZOOM 23
-static constexpr const quint32 QGC_AVERAGE_TILE_SIZE = 13652;
+class MapProvider : public QObject {
+    Q_OBJECT
 
-// TODO: Inherit from QGeoMapType
-class MapProvider
-{
 public:
-    MapProvider(const QString &mapName, const QString &referrer, const QString &imageFormat, quint32 averageSize = QGC_AVERAGE_TILE_SIZE,
-                QGeoMapType::MapStyle mapStyle = QGeoMapType::CustomMap);
-    virtual ~MapProvider();
+    MapProvider(const QString& referrer, const QString& imageFormat, const quint32 averageSize,
+        const QGeoMapType::MapStyle mapType = QGeoMapType::CustomMap, QObject* parent = nullptr);
 
-    QUrl getTileURL(int x, int y, int zoom) const;
+    virtual QNetworkRequest getTileURL(const int x, const int y, const int zoom, QNetworkAccessManager* networkManager);
 
-    QString getImageFormat(QByteArray image) const;
+    QString getImageFormat(const QByteArray& image) const;
 
-    // TODO: Download Random Tile And Use That Size Instead?
     quint32 getAverageSize() const { return _averageSize; }
 
-    QGeoMapType::MapStyle getMapStyle() const { return _mapStyle; }
-    const QString& getMapName() const { return _mapName; }
-    int getMapId() const { return _mapId; }
-    const QString& getReferrer() const { return _referrer; }
-    virtual QByteArray getToken() const { return QByteArray(); }
+    QGeoMapType::MapStyle getMapStyle() { return _mapType; }
 
-    virtual int long2tileX(double lon, int z) const;
-    virtual int lat2tileY(double lat, int z) const;
+    virtual int long2tileX(const double lon, const int z) const;
 
-    virtual bool isElevationProvider() const { return false; }
-    virtual bool isBingProvider() const { return false; }
+    virtual int lat2tileY(const double lat, const int z) const;
 
-    virtual QGCTileSet getTileCount(int zoom, double topleftLon,
-                                    double topleftLat, double bottomRightLon,
-                                    double bottomRightLat) const;
+    virtual bool _isElevationProvider() const { return false; }
+    virtual bool _isBingProvider() const { return false; }
+
+    virtual QGCTileSet getTileCount(const int zoom, const double topleftLon,
+                                     const double topleftLat, const double bottomRightLon,
+                                     const double bottomRightLat) const;
 
 protected:
-    QString _tileXYToQuadKey(int tileX, int tileY, int levelOfDetail) const;
-    int _getServerNum(int x, int y, int max) const;
+    QString _tileXYToQuadKey(const int tileX, const int tileY, const int levelOfDetail) const;
+    int _getServerNum(const int x, const int y, const int max) const;
+    // Define the url to Request
+    virtual QString _getURL(const int x, const int y, const int zoom, QNetworkAccessManager* networkManager) = 0;
 
-    virtual QString _getURL(int x, int y, int zoom) const = 0;
+    // Define Referrer for Request RawHeader
+    QString     _referrer;
+    QString     _imageFormat;
+    quint32     _averageSize;
+    QByteArray  _userAgent;
+    QString     _language;
+    QGeoMapType::MapStyle _mapType;
 
-    const QString _mapName;
-    const QString _referrer;
-    const QString _imageFormat;
-    const quint32 _averageSize;
-    const QGeoMapType::MapStyle _mapStyle;
-    const QString _language;
-    const int _mapId;
-
-private:
-    static int _mapIdIndex;
 };
